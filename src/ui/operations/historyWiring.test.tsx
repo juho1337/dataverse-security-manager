@@ -88,7 +88,7 @@ describe('the screens reach the recorder of the app', () => {
     const wrapper = ({ children }: { children: ReactNode }) => <OperationRecorderContext.Provider value={recorder}>{children}</OperationRecorderContext.Provider>;
     const { result } = renderHook(() => useRoleEditing({ reader: w.reader, writer: w.writer, actor: 'Owner', environmentId: ENV, onReload: () => undefined }), { wrapper });
     act(() => result.current.begin(matrixOf(w.initial), rowOf(w.initial), false));
-    act(() => result.current.stage('Read', 'Local'));
+    act(() => result.current.stage(ROLE, 'Read', 'Local'));
     act(() => result.current.openPreview());
     await act(async () => {
       await result.current.confirm();
@@ -103,7 +103,7 @@ describe('the screens reach the recorder of the app', () => {
     const w = world({ Read: 'Basic' });
     const { result } = renderHook(() => useRoleEditing({ reader: w.reader, writer: w.writer, actor: 'Owner', environmentId: ENV, onReload: () => undefined }));
     act(() => result.current.begin(matrixOf(w.initial), rowOf(w.initial), false));
-    act(() => result.current.stage('Read', 'Local'));
+    act(() => result.current.stage(ROLE, 'Read', 'Local'));
     act(() => result.current.openPreview());
     await act(async () => {
       await result.current.confirm();

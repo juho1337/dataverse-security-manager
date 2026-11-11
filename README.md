@@ -4,7 +4,7 @@ See who has access to what in Dataverse, and change it safely. A [Power Platform
 
 | Module | Use it to |
 |---|---|
-| **Role Analyzer** | Compare a table's privileges across all security roles (Privilege and Depth matrix), see who holds each role, edit role privileges |
+| **Role Analyzer** | Compare a table's privileges across all security roles (Privilege and Depth matrix), see who holds each role, edit privileges of one or several roles at once |
 | **Access Explorer** | Inspect a user or team: direct and team roles, table privileges and where each one comes from; add or remove direct roles; compare two users |
 | **BU Manager** | Move users to another Business Unit and restore their roles, with a per-user dry run first |
 | **Operations** | Review every change, copy a ticket-ready report, restore a change |
@@ -18,7 +18,7 @@ Other PPTB tools also show and edit security roles and role assignments, for exa
 ## What this tool changes
 It writes to Dataverse only after you preview and confirm, and only these kinds of change:
 
-- **Add or remove a privilege** (and its depth) on a security role: `AddPrivilegesRole`, `RemovePrivilegeRole`.
+- **Add or remove a privilege** (and its depth) on one or several security roles at once, each role applied and verified separately: `AddPrivilegesRole`, `RemovePrivilegeRole`.
 - **Assign or remove a direct security role** of a user: `systemuserroles_association` associate / disassociate.
 - **Move a user to another Business Unit** (the user's `businessunitid`), followed by assigning the matching roles of the target unit.
 - **Restore** an earlier change of the kinds above (the same operations in reverse).

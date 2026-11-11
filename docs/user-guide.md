@@ -2,7 +2,7 @@
 
 Install: see the [README](../README.md#install). Open the tool from the PPTB sidebar; the header shows the connected environment and whether editing is enabled.
 
-*The screenshots show fictional demo data, not a real environment.*
+*The screenshots were taken in PPTB Desktop against a disposable Developer environment. The environment's name, address and identifiers, and the names of its users, are covered by dark boxes.*
 
 ## Before you change anything
 - **Environment check.** The tool identifies the environment you are connected to. A Dev, Test or UAT connection allows editing at once. A **Production** or unknown-type connection stays read-only until you tick the acknowledgement in the header (for that environment only; switching connection asks again).
@@ -20,10 +20,17 @@ Install: see the [README](../README.md#install). Open the tool from the PPTB sid
 2. Read the matrix. *Privilege Matrix* shows the highest depth per privilege; *Depth Matrix* shows letters (C R W D A T S H) per depth: User, Business Unit, Parent: Child BU, Organization.
 3. Filter by privilege, depth, holder or Business Unit. Press **Load users** to see how many people hold each role (direct, via team, application users); the **Refresh users** button reads again, up to 150 roles per click.
 4. Open a role (chevron) for its details. To edit, click a depth in the matrix, then **Preview changes** > **Confirm and apply**.
+5. To change several roles at once, click a depth in each role you want to change; the staged changes of every role are kept. **Preview changes** lists every role, and one confirmation applies them one after the other. Each role is checked by reading it again and is recorded as its own operation in **Operations**, so each can be restored separately. If a role does not end fully verified, the roles after it are not changed. Use **Remove** next to a role to drop it from the edit, or **Discard** to drop everything. All roles in one edit must be on the same table.
 
-![Role Analyzer: privilege matrix with users loaded and a role expanded](images/01-role-analyzer.png)
+![Role Analyzer: Depth Matrix with users loaded and a role expanded](images/01-role-analyzer.png)
 
 ![Role Analyzer: Depth Matrix with one staged change](images/02-role-analyzer-edit.png)
+
+![Role Analyzer: two roles in one edit, six pending changes](images/10-role-analyzer-several-roles.png)
+
+![Review changes for two roles](images/11-role-analyzer-review-several-roles.png)
+
+![Result: both roles verified](images/12-role-analyzer-result-several-roles.png)
 
 **Careful:** several roles can share a name in different Business Units; the tool shows which copy is meant. Counts are role assignments, not full effective access.
 

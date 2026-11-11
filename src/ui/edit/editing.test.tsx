@@ -454,3 +454,97 @@ describe('the preview shortcut below the table', () => {
     expect(screen.queryByRole('group', { name: 'Preview the staged changes' })).toBeNull();
   });
 });
+
+describe('several roles in one edit', () => {
+  const rowOfRole = (name: string): HTMLElement => {
+    const row = screen.getAllByRole('row').find((r) => within(r).queryByText(name, { selector: '.role-name' }));
+    if (!row) throw new Error(`row ${name} not found`);
+    return row;
+  };
+  /** A second editable role on the table (not managed, a root role), found in the synthetic data. */
+  async function secondRoleName(): Promise<string> {
+    const r = await new FixtureReader().loadRoleMatrix('contoso_project');
+    if (r.status === 'error') throw new Error('fixture');
+    const other = r.data.roles.find((x) => x.name !== ROLE_NAME && x.isManaged === false && x.parentRootRoleId === null);
+    if (!other) throw new Error('no second editable role in the fixture');
+    return other.name;
+  }
+  const startRole = async (user: User, name: string) => {
+    const cell = (await waitFor(() => within(rowOfRole(name)).getAllByRole('gridcell', { name: /^Read:/ })))[0] as HTMLElement;
+    await user.click(cell);
+  };
+  const readSelect = (name: string) => screen.getByRole('combobox', { name: `Read depth for ${name}` }) as HTMLSelectElement;
+  /** Chooses a Read depth that differs from what the role holds now, so the choice is a real change. */
+  const changeRead = async (user: User, name: string) => {
+    const select = readSelect(name);
+    await user.selectOptions(select, select.value === 'Global' ? 'Basic' : 'Global');
+  };
+
+  it('edits two roles, previews both, applies them one after the other and verifies each', async () => {
+    const reader = new LiveLikeReader();
+    const { writer, calls } = writerFor(reader);
+    const second = await secondRoleName();
+    const { user } = setup(reader, writer);
+    await startEditing(user);
+    await user.selectOptions(depthSelect('Read'), 'Organization');
+    await startRole(user, second);
+    await changeRead(user, second);
+    expect(screen.getByText(/Editing 2 roles/, { selector: 'strong' })).toBeTruthy();
+    expect(screen.getByText(/2 changes staged/)).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Preview changes' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('heading', { name: ROLE_NAME })).toBeTruthy();
+    expect(within(dialog).getByRole('heading', { name: second })).toBeTruthy();
+    expect(calls).toHaveLength(0); // nothing is written by the preview
+    await user.click(within(dialog).getByRole('button', { name: 'Confirm and apply' }));
+
+    const result = await screen.findByRole('region', { name: 'Edit result' });
+    expect(within(result).getByText(/2 of 2 roles verified/)).toBeTruthy();
+    expect(calls).toHaveLength(2);
+    expect(writer.addPrivilege).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops after a role that fails: the roles after it are not attempted and not changed', async () => {
+    const reader = new LiveLikeReader();
+    const { writer, calls } = writerFor(reader, { failOn: 'Read' });
+    const second = await secondRoleName();
+    const { user } = setup(reader, writer);
+    await startEditing(user);
+    await user.selectOptions(depthSelect('Read'), 'Organization');
+    await startRole(user, second);
+    await changeRead(user, second);
+    await user.click(screen.getByRole('button', { name: 'Preview changes' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirm and apply' }));
+
+    const result = await screen.findByRole('region', { name: 'Edit result' });
+    expect(within(result).getByText(/0 of 2 roles verified/)).toBeTruthy();
+    expect(within(result).getByText(/Not attempted\./)).toBeTruthy();
+    expect(calls).toHaveLength(1); // only the first role was sent; the second was never written
+  });
+
+  it('removes one role from the edit and keeps the other', async () => {
+    const reader = new LiveLikeReader();
+    const { writer } = writerFor(reader);
+    const second = await secondRoleName();
+    const { user } = setup(reader, writer);
+    await startEditing(user);
+    await user.selectOptions(depthSelect('Read'), 'Organization');
+    await startRole(user, second);
+    await changeRead(user, second);
+    await user.click(screen.getByRole('button', { name: `Remove ${second} from the edit` }));
+    expect(screen.getByText(/Editing Project Contributor/, { selector: 'strong' })).toBeTruthy();
+    expect(screen.getByText(/1 change staged/)).toBeTruthy();
+  });
+
+  it('a role that is being edited keeps its staged change when another role is added', async () => {
+    const reader = new LiveLikeReader();
+    const second = await secondRoleName();
+    const { user } = setup(reader, writerFor(reader).writer);
+    await startEditing(user);
+    await user.selectOptions(depthSelect('Read'), 'Organization');
+    await startRole(user, second);
+    expect((depthSelect('Read') as HTMLSelectElement).value).toBe('Global');
+    expect(screen.getByText(/1 change staged/)).toBeTruthy();
+  });
+});

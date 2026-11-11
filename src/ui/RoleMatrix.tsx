@@ -191,8 +191,9 @@ interface BodyProps {
 function MatrixBody({ result, reader, editing: editingConfig, editor, refreshing, filters, view, onView, onFilters }: BodyProps) {
   const { table } = result.data;
   // The edit session belongs to one table: its cells are only drawn on that table (another table can have the same role id).
-  const session = editor.phase.kind !== 'idle' && editor.phase.session.table === table.logicalName ? editor.phase.session : null;
-  const canStartEdit = editor.available && editor.phase.kind === 'idle' && !refreshing;
+  const sessionOf = (roleId: string) => editor.sessionFor(roleId, table.logicalName);
+  // Another role can be added to the edit while editing; not while a preview is open, an apply runs or its result is shown.
+  const canStartEdit = editor.available && (editor.phase.kind === 'idle' || editor.phase.kind === 'editing') && !refreshing;
   const colCount = (view === 'depth' ? DEPTH_COLUMNS.length : PRIVILEGE_IDS.length) + 1;
   const [announcement, setAnnouncement] = useState('');
   const details = useRoleDetails(reader, table.logicalName);
@@ -369,6 +370,7 @@ function MatrixBody({ result, reader, editing: editingConfig, editor, refreshing
     switch (row.kind) {
       case 'role': {
         const s = row.row.summary;
+        const session = sessionOf(row.row.roleId);
         // Who holds the role: exact once the assignments were read (the row was expanded), a summary or an invitation before that.
         const loaded = details.states[row.row.roleId];
         const family = loaded && loaded.phase !== 'loading' && loaded.result.status !== 'error' ? describeFamily(loaded.result) : null;
@@ -378,12 +380,13 @@ function MatrixBody({ result, reader, editing: editingConfig, editor, refreshing
         // needs an idle editor.
         const editability = editor.available && !refreshing ? beginRoleEdit(result.data, row.row, result.status === 'partial') : null;
         const start = canStartEdit ? editability : null;
-        const begin = start?.ok ? () => editor.begin(result.data, row.row, result.status === 'partial') : undefined;
+        const begin = start?.ok ? (): boolean => editor.begin(result.data, row.row, result.status === 'partial') : undefined;
         const stageFromIdle = begin ? (p: PrivilegeId, column: (typeof DEPTH_COLUMNS)[number]) => {
-          begin();
+          // Nothing is staged when the role was refused (for example staged changes on another table are still open).
+          if (!begin()) return;
           // The same toggle as inside an edit session: a click on the depth the role already grants removes the grant (staging that same depth would be a no-op).
           const held = row.row.cells[p];
-          editor.stage(p, held.kind === 'depth' && held.depth === column ? null : column);
+          editor.stage(row.row.roleId, p, held.kind === 'depth' && held.depth === column ? null : column);
         } : undefined;
         return (
           <tr key={row.key} {...rowProps(row)} className="row-role">
@@ -396,19 +399,19 @@ function MatrixBody({ result, reader, editing: editingConfig, editor, refreshing
               <span className="meta" title={metaText}>{metaText}</span>
               {(s?.instancesDiffer ?? row.row.lineage?.instancesDiffer) && <span className="badge badge-differs">Instances differ</span>}
               {row.row.lineage?.rootMissing && <span className="badge badge-differs">Root role not loaded</span>}
-              {session && editor.editingRoleId === row.row.roleId && <span className="badge badge-editing">Editing</span>}
+              {session && <span className="badge badge-editing">Editing</span>}
             </th>
-            {session && editor.editingRoleId === row.row.roleId ? (
+            {session ? (
               view === 'depth' ? (
                 <DepthCells
                   cells={session.original}
                   staged={stagedDepths(session)}
                   effective={effectiveDepths(session)}
                   onAnnounce={setAnnouncement}
-                  {...(editor.phase.kind === 'editing' ? { onEdit: (p: PrivilegeId, column: (typeof DEPTH_COLUMNS)[number]) => editor.stage(p, currentDepth(session, p) === column ? null : column) } : {})}
+                  {...(editor.phase.kind === 'editing' ? { onEdit: (p: PrivilegeId, column: (typeof DEPTH_COLUMNS)[number]) => editor.stage(row.row.roleId, p, currentDepth(session, p) === column ? null : column) } : {})}
                 />
               ) : (
-                <EditableCells session={session} onStage={editor.stage} disabled={editor.phase.kind !== 'editing'} />
+                <EditableCells session={session} onStage={(p, d) => editor.stage(row.row.roleId, p, d)} disabled={editor.phase.kind !== 'editing'} />
               )
             ) : (
               <CellsFor cells={row.row.cells} view={view} onAnnounce={setAnnouncement} {...(stageFromIdle ? { onEdit: stageFromIdle } : {})} {...(begin ? { onBegin: begin } : {})} />
