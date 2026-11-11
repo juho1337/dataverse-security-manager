@@ -1,5 +1,5 @@
-/* Plain CSS. All colors are custom properties; light is the default, dark follows the system
-   (host theme tokens are UNVERIFIED). */
+/* Plain CSS. All colors are custom properties; light is the default; dark follows the PPTB theme
+   (boot/theme.ts sets data-theme from the host) and, without a host, the system setting. */
 :root {
   --bg: #ffffff;
   --surface: #f5f6f8;
@@ -40,7 +40,7 @@
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #14181d;
     --surface: #1d232a;
     --text: #e6e9ed;
@@ -76,6 +76,43 @@
     --dm-staged-border: #ffcf5a;
   }
 }
+:root[data-theme="dark"] {
+  --bg: #14181d;
+  --surface: #1d232a;
+  --text: #e6e9ed;
+  --muted: #a3acb8;
+  --border: #3a434d;
+  --accent: #6cb2f5;
+  --accent-hover: #8fc6f8;
+  --accent-soft: #1d3042;
+  --page: #0e1216;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --border-soft: #2b333c;
+  --focus: #6cb2f5;
+  --warn-bg: #4a3b0a;
+  --warn-text: #ffe9a8;
+  --error-bg: #4d1a22;
+  --error-text: #ffc9d0;
+  --demo-bg: #26323f;
+  --ok-bg: #173a22;
+  --ok-text: #bfe8c9;
+  --dm-granted-bg: #6cb2f5;
+  --dm-granted-fg: #0b1620;
+  --dm-covered-fg: #a3acb8;
+  --dm-covered-border: #8b95a2;
+  --dm-inactive-fg: #a3acb8;
+  --dm-na-fg: #b6bec9;
+  --dm-na-bg: #1d232a;
+  --dm-na-stripe: #262e37;
+  --dm-unknown-bg: #4a3b0a;
+  --dm-unknown-fg: #ffe9a8;
+  --dm-staged-bg: #5a4300;
+  --dm-staged-fg: #fff3c4;
+  --dm-staged-border: #ffcf5a;
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 * { box-sizing: border-box; }
 body { margin: 0; font: 14px/1.45 system-ui, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }

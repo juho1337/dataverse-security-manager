@@ -11,6 +11,10 @@ See who has access to what in Dataverse, and change it safely. A [Power Platform
 
 Unlike a plain role editor, it starts from the table ("who can do what on `account`?"), explains the origin of every privilege (direct role or team), and reads every change back from Dataverse before calling it a success.
 
+## Other tools for security roles
+
+Other PPTB tools also show and edit security roles and role assignments, for example Advanced Security Roles Explorer and User Security Manager. This tool does not replace them for everything: it differs in that it explains where each privilege comes from, moves users between Business Units and restores their roles, and keeps a history of every change that can be restored. Pick the tool that fits the task; they can be installed side by side.
+
 ## What this tool changes
 It writes to Dataverse only after you preview and confirm, and only these kinds of change:
 

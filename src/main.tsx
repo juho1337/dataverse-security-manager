@@ -6,6 +6,7 @@ import { createHostSecurityWriter } from './adapters/pptb/writer/hostWriter';
 import { selectReader } from './app/dataSource';
 import { createEnvironmentResolver } from './app/environment';
 import { bootState } from './boot/diagnostics';
+import { followHostTheme } from './boot/theme';
 import { App } from './ui/App';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import './ui/styles.css';
@@ -13,6 +14,7 @@ import './ui/styles.css';
 // Inside a Power Platform ToolBox host the tool reads live Dataverse data (read-only, after the environment identity check); without a host
 // it shows clearly labelled synthetic demo data. The data source is chosen once, here, and the header always says which one it is.
 const host = window as unknown as HostWindow;
+followHostTheme(host);
 const { reader, dataSource } = selectReader(host);
 // Only inside a host that provides the Dataverse API; the writer identifies the connected environment before every write and refuses a
 // confirmation given for another one (decision D1: no fixed environment). Never in demo mode.

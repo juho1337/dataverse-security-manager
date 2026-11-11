@@ -19,6 +19,7 @@ export interface HostWindow {
       readonly getActiveConnection?: () => Promise<{ id?: string; name?: string; url?: string; environment?: string } | null>;
       readonly getConnections?: () => Promise<Array<{ url?: string } | null>>;
     };
+    readonly utils?: { readonly getCurrentTheme?: () => Promise<'light' | 'dark'> };
   };
   /** Host Dataverse API; only ever wrapped by the read-only facade (readOnlyHost.ts). */
   readonly dataverseAPI?: RawDataverseApi;
