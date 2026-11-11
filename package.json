@@ -1,0 +1,82 @@
+{
+  "name": "@juho1337/dataverse-security-manager",
+  "version": "0.1.0",
+  "type": "module",
+  "displayName": "Dataverse Security Manager",
+  "description": "Analyze and manage Dataverse security: role privilege matrix by table, user and team access with provenance, Business Unit moves with role restoration, and a restorable change history.",
+  "icon": "icons/dsm.svg",
+  "main": "index.html",
+  "author": "juho1337",
+  "license": "GPL-3.0",
+  "contributors": [
+    {
+      "name": "juho1337",
+      "url": "https://github.com/juho1337"
+    }
+  ],
+  "keywords": [
+    "dataverse",
+    "security",
+    "security-roles",
+    "privileges",
+    "business-unit",
+    "powerplatform",
+    "pptb"
+  ],
+  "homepage": "https://github.com/juho1337/dataverse-security-manager#readme",
+  "bugs": {
+    "url": "https://github.com/juho1337/dataverse-security-manager/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juho1337/dataverse-security-manager.git"
+  },
+  "configurations": {
+    "repository": "https://github.com/juho1337/dataverse-security-manager",
+    "website": "https://github.com/juho1337/dataverse-security-manager",
+    "readmeUrl": "https://raw.githubusercontent.com/juho1337/dataverse-security-manager/main/README.md"
+  },
+  "features": {
+    "minAPI": "1.2.7",
+    "connections": 1
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "vite build && node scripts/finalize-package.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "validate": "pptb-validate",
+    "validate:offline": "node scripts/validate-offline.mjs",
+    "check:package": "node scripts/check-package.mjs",
+    "prepublishOnly": "node scripts/guard-publish.mjs && npm run build && npm run validate && npm run check:package"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@pptb/types": "1.2.7",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "24.19.2",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "4.7.0",
+    "eslint": "10.14.0",
+    "jsdom": "26.1.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "6.4.5",
+    "vitest": "5.0.5"
+  }
+}

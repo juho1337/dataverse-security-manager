@@ -1,0 +1,114 @@
+.access-layout { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr; gap: 1rem; align-items: start; }
+@media (max-width: 48rem) { .access-layout { grid-template-columns: 1fr; } }
+.access-search label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+.access-search input[type='search'] { width: 100%; box-sizing: border-box; padding: 0.4rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+.access-search ul, .access-detail ul { list-style: none; padding: 0; margin: 0.25rem 0; }
+.access-hint, .access-result-meta { color: var(--muted); font-size: 0.9em; }
+.access-result { display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem; align-items: baseline; width: 100%; text-align: left; padding: 0.4rem; margin: 0.15rem 0; background: var(--surface); color: var(--text); border: 1px solid var(--border); cursor: pointer; }
+.access-result[aria-current='true'] { border-color: var(--accent); outline: 2px solid var(--accent); }
+.access-result:focus-visible, .access-search input:focus-visible, .access-detail select:focus-visible, .access-detail button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.access-result-name { font-weight: 600; }
+.access-badge { background: var(--demo-bg); color: var(--text); border: 1px solid var(--border); padding: 0 0.4rem; border-radius: 0.6rem; font-size: 0.85em; }
+.access-scope { background: var(--surface); border-left: 4px solid var(--accent); padding: 0.5rem 0.75rem; }
+.access-partial { background: var(--warn-bg); color: var(--warn-text); padding: 0.5rem 0.75rem; }
+.access-error { background: var(--error-bg); color: var(--error-text); padding: 0.5rem 0.75rem; }
+.access-grants li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.access-origin { font-size: 0.9em; }
+.access-team-group { margin-left: 0.5rem; }
+/* Explorer layout and rows: a compact results pane on the left, the selected user or team on the right (stacked on narrow widths). */
+.access-layout { grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr); }
+.access-search { position: sticky; top: 0; max-height: calc(100vh - 8rem); overflow: auto; }
+/* Declared after the desktop grid above, so the single-column layout wins on narrow widths. */
+@media (max-width: 48rem) { .access-layout { grid-template-columns: 1fr; } .access-search { position: static; max-height: none; } }
+.access-filter { display: flex; gap: 0.25rem; margin: 0.5rem 0; }
+.access-filter button { flex: 1 1 0; padding: 0.25rem 0.5rem; border: 1px solid var(--border); background: transparent; color: inherit; font: inherit; cursor: pointer; border-radius: 0.3rem; }
+.access-filter button[aria-pressed='true'] { border-color: var(--accent); font-weight: 600; box-shadow: inset 0 -3px 0 var(--accent); }
+.access-result { padding: 0.3rem 0.5rem; }
+.access-scope { border-left: 4px solid var(--accent); padding: 0.4rem 0.75rem; margin: 0.5rem 0; }
+.access-scope summary { cursor: pointer; }
+.access-scope p { margin: 0.4rem 0 0; }
+.assign-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.5rem 0; }
+.assign-summary { flex: 1 1 12rem; color: var(--muted); font-size: 0.9em; }
+.role-rows { list-style: none; padding: 0; margin: 0.25rem 0; }
+.role-rows li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 0.75rem; padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+.role-rows li[data-staged='remove'] .role-row-main strong { text-decoration: line-through; }
+.role-row-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.5rem; min-width: 0; }
+.role-picker { border: 1px solid var(--border); border-radius: 0.4rem; padding: 0.5rem 0.75rem; margin: 0.5rem 0; }
+.role-picker-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.role-picker-head h4 { margin: 0.25rem 0; }
+.role-picker-search { display: flex; flex-direction: column; gap: 0.15rem; max-width: 24rem; }
+.role-picker-list { list-style: none; padding: 0; margin: 0.25rem 0; max-height: 18rem; overflow: auto; }
+.role-picker-list li { padding: 0.2rem 0; }
+.role-picker-list li[data-state='held'] { opacity: 0.7; }
+/* Table privileges: the same cell semantics as the Role Analyzer, with the sources of the selected cell below the table. */
+.detail-tabs { margin: 0.5rem 0; max-width: 24rem; }
+.tp-table { min-width: 0; width: 100%; }
+.tp-table th, .tp-table td { white-space: normal; }
+.tp-table th[scope='row'] { min-width: 10rem; }
+.tp-cell { width: 100%; text-align: left; padding: 0.15rem 0.4rem; border-color: transparent; background: transparent; white-space: nowrap; }
+.tp-cell[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); }
+.tp-sources { border: 1px solid var(--border-soft); border-left: 4px solid var(--accent); border-radius: 0.4rem; padding: 0.5rem 0.9rem; margin: 0.75rem 0; background: var(--bg); }
+.tp-contributors { list-style: none; padding: 0; margin: 0.25rem 0; }
+.tp-contributors li { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-soft); }
+.tp-contributors li[data-decides='true'] { background: color-mix(in srgb, var(--accent-soft) 60%, transparent); }
+.tp-cell { font-size: 12.5px; padding: 0.1rem 0.3rem; }
+.tp-table td { padding: 0.25rem 0.4rem; }
+/* The role table (Add roles): like the BU Manager's user table, scrolling inside its own area so the actions stay in view. */
+.assign-bar { position: sticky; top: 0; z-index: 3; background: var(--page, var(--bg)); padding: 0.5rem 0; margin: 0; border-bottom: 1px solid var(--border-soft); }
+.role-table-scroll { max-height: 24rem; overflow: auto; border: 1px solid var(--border-soft); border-radius: 0.4rem; background: var(--bg); }
+.role-table { min-width: 0; width: 100%; border-collapse: collapse; }
+.role-table th, .role-table td { white-space: normal; padding: 0.4rem 0.6rem; }
+.role-table thead th { position: sticky; top: 0; z-index: 1; background: var(--surface); }
+.role-table .role-check { width: 2.5rem; text-align: center; padding-right: 0; }
+.role-table tbody tr { cursor: pointer; }
+.role-table tbody tr[data-state='chosen'] { background: var(--accent-soft); }
+.role-table tbody tr[data-state='held'] { cursor: default; opacity: 0.65; }
+.access-badge-on { background: var(--accent-soft); border-color: var(--accent); }
+/* The Depth Matrix of the table privileges draws its letters exactly like the Role Analyzer's (same classes and per-privilege colours): the eight letters of
+   a depth stay on one line, and a column is wide enough for them (the area scrolls sideways in a narrow window instead of breaking a letter off). */
+.tp-table .letters { flex-wrap: nowrap; }
+.tp-table td.depth-cell { min-width: 176px; white-space: nowrap; }
+.access-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.access-title-row h2 { margin: 0.5rem 0; }
+
+/* ---- Add roles and the role change result: cards, chips and a banner (theme tokens only; wraps in a narrow window) ---- */
+.assign-bar .primary { display: inline-flex; align-items: center; gap: 6px; }
+.assign-bar .icon { width: 16px; height: 16px; stroke-width: 2.4; }
+.assign-summary-staged { flex: 0 1 auto; padding: 3px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.role-picker { border: 1px solid var(--border-soft, var(--border)); border-radius: 12px; padding: 14px 16px; background: var(--bg); box-shadow: var(--shadow); }
+.role-picker-head h4 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 16px; }
+.rp-head-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+.rp-head-icon .icon { width: 18px; height: 18px; }
+.role-picker-info { margin: 10px 0; padding: 8px 12px; border-left: 4px solid var(--accent); border-radius: 6px; background: var(--surface); }
+.search-field { position: relative; display: flex; align-items: center; max-width: 26rem; }
+.search-field .icon { position: absolute; left: 10px; width: 16px; height: 16px; color: var(--muted); pointer-events: none; }
+.search-field input { width: 100%; box-sizing: border-box; padding: 7px 10px 7px 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; }
+.search-field input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+.role-picker .access-live { margin: 10px 0 8px; font-weight: 600; }
+.role-table-scroll { border-radius: 10px; }
+.role-table tbody tr { border-bottom: 1px solid var(--border-soft, var(--border)); }
+.role-table tbody tr:hover:not([data-state='held']) { background: var(--surface); }
+.role-table tbody tr[data-state='chosen'] { box-shadow: inset 4px 0 0 var(--accent); }
+.role-table tbody tr[data-state='chosen']:hover { background: var(--accent-soft); }
+.role-table input[type='checkbox'] { width: 16px; height: 16px; cursor: pointer; }
+.role-table .access-badge { margin-right: 6px; }
+.access-badge-on { background: var(--accent-soft); color: var(--accent); border-color: transparent; font-weight: 600; }
+.access-badge-managed { background: var(--surface); color: var(--muted); }
+
+.assign-result { margin: 18px 0; padding: 14px 16px; border-radius: 12px; scroll-margin-top: 12px; }
+.assign-result-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 8px; }
+.assign-result-head h3 { margin: 0; font-size: 17px; }
+.assign-banner { display: flex; align-items: flex-start; gap: 10px; }
+.assign-banner-icon { flex: none; display: inline-flex; margin-top: 1px; }
+.assign-banner-icon .icon { width: 20px; height: 20px; stroke-width: 2.4; }
+.assign-result .preview-table { border-collapse: separate; border-spacing: 0; }
+.assign-result .preview-table th, .assign-result .preview-table td { border: 0; border-bottom: 1px solid var(--border-soft, var(--border)); padding: 8px 10px; }
+.assign-result .preview-table thead th { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.assign-applying { display: flex; align-items: center; gap: 10px; }
+.spin-icon { display: inline-flex; animation: dsm-spin 1s linear infinite; color: var(--accent); }
+.spin-icon .icon { width: 18px; height: 18px; stroke-width: 2.4; }
+@media (prefers-reduced-motion: reduce) { .spin-icon { animation: none; } }
+.rd-caution-note { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); }
+.restore-dialog .preview-table { border-collapse: separate; border-spacing: 0; }
+.restore-dialog .preview-table th, .restore-dialog .preview-table td { border: 0; border-bottom: 1px solid var(--border-soft, var(--border)); padding: 8px 10px; }
+.restore-dialog .preview-table thead th { color: var(--muted); font-size: 12.5px; font-weight: 600; }

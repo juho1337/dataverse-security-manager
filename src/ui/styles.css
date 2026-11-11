@@ -1,0 +1,364 @@
+/* Plain CSS. All colors are custom properties; light is the default, dark follows the system
+   (host theme tokens are UNVERIFIED). */
+:root {
+  --bg: #ffffff;
+  --surface: #f5f6f8;
+  --text: #1b1f24;
+  --muted: #5b6470;
+  --border: #c9d0d8;
+  --accent: #0b5cad;
+  --accent-hover: #094a8c;
+  --accent-soft: #e6f0fb;
+  --page: #f3f5f8;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 8px 24px rgba(16, 24, 40, 0.14);
+  --border-soft: #e4e8ee;
+  --focus: #0b5cad;
+  --warn-bg: #fff4ce;
+  --warn-text: #5c4500;
+  --error-bg: #fde7e9;
+  --error-text: #7a1220;
+  --demo-bg: #e7eef7;
+  --ok-bg: #e3f4e6;
+  --ok-text: #14532d;
+  /* Depth Matrix letters: own accessible palette (legacy colour mapping is not adopted). Checked by depthPalette.test.ts. */
+  --dm-granted-bg: #0b5cad;
+  --dm-granted-fg: #ffffff;
+  --dm-covered-fg: #5b6470;
+  --dm-covered-border: #6b7480;
+  --dm-inactive-fg: #5b6470;
+  --dm-na-fg: #4b5563;
+  --dm-na-bg: #f5f6f8;
+  --dm-na-stripe: #e4e8ee;
+  --dm-unknown-bg: #fff4ce;
+  --dm-unknown-fg: #5c4500;
+  --dm-staged-bg: #ffe8a3;
+  --dm-staged-fg: #3d2e00;
+  --dm-staged-border: #8a5a00;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181d;
+    --surface: #1d232a;
+    --text: #e6e9ed;
+    --muted: #a3acb8;
+    --border: #3a434d;
+    --accent: #6cb2f5;
+    --accent-hover: #8fc6f8;
+    --accent-soft: #1d3042;
+    --page: #0e1216;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+    --border-soft: #2b333c;
+    --focus: #6cb2f5;
+    --warn-bg: #4a3b0a;
+    --warn-text: #ffe9a8;
+    --error-bg: #4d1a22;
+    --error-text: #ffc9d0;
+    --demo-bg: #26323f;
+    --ok-bg: #173a22;
+    --ok-text: #bfe8c9;
+    --dm-granted-bg: #6cb2f5;
+    --dm-granted-fg: #0b1620;
+    --dm-covered-fg: #a3acb8;
+    --dm-covered-border: #8b95a2;
+    --dm-inactive-fg: #a3acb8;
+    --dm-na-fg: #b6bec9;
+    --dm-na-bg: #1d232a;
+    --dm-na-stripe: #262e37;
+    --dm-unknown-bg: #4a3b0a;
+    --dm-unknown-fg: #ffe9a8;
+    --dm-staged-bg: #5a4300;
+    --dm-staged-fg: #fff3c4;
+    --dm-staged-border: #ffcf5a;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.45 system-ui, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.app { padding: 0 16px 28px; }
+.app-footer { display: block; margin: 28px 0 0; text-align: right; font-size: 11px; color: var(--muted, #6b7280); user-select: text; }
+.app-header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 0 8px; }
+.app-header h1 { font-size: 18px; margin: 0; }
+.env { display: flex; flex-wrap: wrap; gap: 6px; }
+.env-badge { padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface); }
+.env-host { background: var(--ok-bg); color: var(--ok-text); }
+.env-warn { background: var(--warn-bg); color: var(--warn-text); }
+.env-demo { background: var(--demo-bg); }
+.nav { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.nav button { background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px; color: var(--text); cursor: pointer; font: inherit; }
+.nav button[aria-current="page"] { border-bottom-color: var(--accent); font-weight: 600; }
+button { font: inherit; }
+input[type="text"], input[type="search"] { font: inherit; padding: 6px 8px; min-width: 260px; max-width: 100%; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); }
+.field-label { display: block; font-weight: 600; margin-bottom: 4px; }
+.table-selector { margin-bottom: 8px; }
+.combo { position: relative; max-width: 520px; }
+.combo input { width: 100%; }
+.listbox { position: absolute; z-index: 5; left: 0; right: 0; margin: 2px 0 0; padding: 0; list-style: none; max-height: 280px; overflow: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; }
+.option { padding: 6px 8px; cursor: pointer; }
+.option.active { background: var(--surface); outline: 1px solid var(--accent); outline-offset: -1px; }
+.option.disabled { color: var(--muted); cursor: not-allowed; }
+.option-logical { color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.check { display: inline-flex; align-items: center; gap: 6px; margin: 6px 12px 0 0; }
+.hint { color: var(--muted); }
+.empty { padding: 24px 0; }
+.msg { padding: 8px 12px; border-radius: 4px; }
+.msg-error { background: var(--error-bg); color: var(--error-text); }
+.msg-warn { background: var(--warn-bg); color: var(--warn-text); }
+.selected-table { margin: 4px 0 12px; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); }
+.matrix-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 8px; }
+.matrix-tools .field-label { margin: 0; }
+.legend summary { cursor: pointer; }
+.matrix-scroll { overflow: auto; max-width: 100%; border: 1px solid var(--border); border-radius: 4px; }
+table { border-collapse: collapse; width: 100%; min-width: 880px; }
+caption { text-align: left; padding: 8px; font-weight: 600; }
+th, td { padding: 6px 10px; border-top: 1px solid var(--border); text-align: left; white-space: nowrap; }
+thead th { position: sticky; top: 0; background: var(--surface); }
+.sticky { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+.cell .glyph { display: inline-block; width: 1.2em; text-align: center; }
+.cell-none, .cell-nogrant { color: var(--muted); }
+.cell-na { color: var(--muted); background-image: repeating-linear-gradient(135deg, transparent 0 6px, var(--border) 6px 7px); }
+.cell-unknown { background: var(--warn-bg); color: var(--warn-text); font-weight: 600; }
+.stub { padding: 24px 0; max-width: 60ch; }
+@media (max-width: 700px) {
+  .app { padding: 0 8px 16px; }
+  input[type="text"], input[type="search"] { min-width: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Role expansion (treegrid) */
+.row-role > th, .row-instance > th { white-space: normal; min-width: 260px; }
+.row-role:focus-visible, .row-instance:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.row-instance { background: var(--surface); }
+.indent { padding-left: 28px; }
+.role-name { font-weight: 600; }
+.meta { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 36px; }
+.badge { display: inline-block; font-size: 12px; padding: 0 6px; border: 1px solid var(--border); border-radius: 10px; font-weight: 400; }
+.badge-differs { margin-left: 2.4em; background: var(--warn-bg); color: var(--warn-text); }
+.badge-direct, .badge-both { border-color: var(--accent); }
+.badge-notCounted { color: var(--muted); border-style: dashed; }
+.cell-differs { box-shadow: inset 3px 0 0 var(--accent); }
+.differs-mark { font-weight: 700; }
+td.wide { white-space: normal; max-width: 100%; }
+.row-summary td.wide p { margin: 4px 0; }
+.instance-detail { padding: 4px 4px 8px 28px; }
+.count-strip { margin: 4px 0; }
+.count { margin-right: 14px; white-space: nowrap; }
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px 24px; margin-top: 8px; }
+.groups h4 { margin: 4px 0; }
+.plist { list-style: none; margin: 4px 0; padding: 0; max-height: 240px; overflow: auto; border: 1px solid var(--border); border-radius: 4px; }
+.person { padding: 3px 8px; border-top: 1px solid var(--border); }
+.person:first-child { border-top: 0; }
+.person-excluded .person-name { color: var(--muted); }
+.team { margin: 4px 0; }
+.team > button { background: none; border: 0; padding: 2px 0; cursor: pointer; color: var(--text); text-align: left; }
+.limitation { font-size: 12px; }
+
+/* View switch (segmented radio group) */
+.view-switch { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
+.view-option { position: relative; padding: 4px 12px; cursor: pointer; background: var(--surface); }
+.view-option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.view-option.selected { background: var(--accent); color: var(--bg); font-weight: 600; }
+.view-option:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Depth Matrix letters. State is carried by shape and text as well as colour: solid fill = granted, dashed outline = covered (implied),
+   plain = not granted, hatched + strikethrough = n/a, "?" = unknown, double border + pencil = staged. */
+.letters { display: inline-flex; flex-wrap: wrap; gap: 2px; }
+.letter { display: inline-flex; align-items: center; justify-content: center; gap: 1px; min-width: 18px; height: 22px; padding: 0 1px; font: 600 12px/1 system-ui, "Segoe UI", sans-serif; border: 2px solid transparent; border-radius: 4px; background: transparent; color: var(--dm-inactive-fg); cursor: default; }
+.letter-granted { background: var(--dm-granted-bg); color: var(--dm-granted-fg); border-color: var(--dm-granted-bg); }
+.letter-covered { border: 2px dashed var(--dm-covered-border); color: var(--dm-covered-fg); font-weight: 400; }
+.letter-inactive { color: var(--dm-inactive-fg); font-weight: 400; }
+.letter-notApplicable { background: repeating-linear-gradient(135deg, var(--dm-na-bg) 0 4px, var(--dm-na-stripe) 4px 6px); color: var(--dm-na-fg); text-decoration: line-through; font-weight: 400; }
+.letter-unknown { background: var(--dm-unknown-bg); color: var(--dm-unknown-fg); border-color: var(--dm-unknown-fg); }
+.letter-staged { background: var(--dm-staged-bg); color: var(--dm-staged-fg); border: 3px double var(--dm-staged-border); }
+.letter-mark { font-size: 10px; font-weight: 400; }
+.letter-differs { box-shadow: inset 0 -3px 0 var(--accent); }
+.depth-cell { white-space: normal; }
+
+/* Role editing: toolbar, staged list, preview dialog, result. Same custom properties as above (no new colours). */
+.edit-bar, .edit-result { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 4px; padding: 8px 12px; margin: 8px 0; background: var(--surface); }
+.edit-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.edit-actions button, .edit-toggle, .dialog-actions button { font: inherit; padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); cursor: pointer; }
+.edit-actions button:disabled { opacity: 0.55; cursor: not-allowed; }
+.primary { background: var(--accent) !important; color: #ffffff !important; border-color: var(--accent) !important; }
+.edit-toggle { margin-left: 0.5em; font-size: 12px; padding: 0 8px; }
+.badge-editing { margin-left: 0.5em; border-color: var(--accent); }
+.staged-list { margin: 4px 0 0; padding-left: 1.2em; }
+.staged-kind { font-weight: 600; }
+.cell-edit select { font: inherit; max-width: 100%; }
+.cell-changed { background: var(--dm-staged-bg); color: var(--dm-staged-fg); outline: 2px solid var(--dm-staged-border); outline-offset: -2px; }
+.change-note { display: block; font-size: 12px; }
+.letter-edit { cursor: pointer; }
+.letter-edit[aria-pressed="true"] { outline: 2px solid var(--focus); outline-offset: 1px; }
+.dialog-backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); z-index: 20; }
+.dialog { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+.dialog h2 { margin-top: 0; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.preview-table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+.preview-table th, .preview-table td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; vertical-align: top; }
+.msg-ok { background: var(--ok-bg); color: var(--ok-text); }
+.edit-actions button:focus-visible, .edit-toggle:focus-visible, .dialog-actions button:focus-visible, .cell-edit select:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+@media (forced-colors: active) {
+  .cell-changed { outline-color: Highlight; }
+  .primary { background: ButtonFace !important; color: ButtonText !important; border-color: Highlight !important; }
+}
+.app-notice { display: flex; gap: 12px; align-items: center; margin: 4px 0 8px; padding: 6px 10px; border: 1px solid var(--muted); border-left: 4px solid #b58100; background: var(--bg); }
+.app-notice span { flex: 1; }
+
+/* ---- Foundation (modern look): one calm layer over the plain controls. Zero-specificity defaults (:where) so component rules still win. ---- */
+body { background: var(--page); font: 14px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+.app { padding: 0 24px 40px; max-width: min(100%, 2200px); margin: 0 auto; }
+.app-header { padding: 18px 0 10px; gap: 10px 20px; }
+.app-header h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+.env { gap: 8px; }
+.env-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; border: 1px solid var(--border-soft); background: var(--bg); }
+.env-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.55; flex: none; }
+.env-host { background: var(--ok-bg); border-color: transparent; }
+.env-warn { border-color: transparent; }
+.nav { gap: 2px; border-bottom: 1px solid var(--border-soft); margin-bottom: 18px; }
+.nav button { padding: 10px 16px; border-bottom-width: 2px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; color: var(--muted); transition: background 120ms, color 120ms; }
+.nav button:hover { background: var(--accent-soft); color: var(--text); }
+.nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
+:where(button) { font: inherit; padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); cursor: pointer; transition: background 120ms, border-color 120ms, box-shadow 120ms; }
+:where(button:hover:not(:disabled)) { background: var(--accent-soft); border-color: var(--accent); }
+:where(button:active:not(:disabled)) { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15); }
+:where(button:disabled) { opacity: 0.5; cursor: not-allowed; }
+.primary { background: var(--accent) !important; color: #ffffff !important; border-color: var(--accent) !important; font-weight: 600; }
+.primary:hover:not(:disabled) { background: var(--accent-hover) !important; border-color: var(--accent-hover) !important; }
+:where(input[type="text"], input[type="search"], select, textarea) { font: inherit; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); transition: border-color 120ms, box-shadow 120ms; }
+:where(input[type="text"], input[type="search"], select, textarea):focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+:where(input[type="checkbox"], input[type="radio"]) { accent-color: var(--accent); width: 16px; height: 16px; vertical-align: -3px; }
+.msg { padding: 10px 14px; border-radius: var(--radius-sm); border-left: 4px solid transparent; }
+.msg-error { border-left-color: var(--error-text); }
+.msg-warn { border-left-color: #b58100; }
+.msg-ok { border-left-color: var(--ok-text); }
+h2 { font-size: 18px; font-weight: 650; margin: 8px 0 4px; letter-spacing: -0.005em; }
+h3 { font-size: 15px; font-weight: 650; margin: 4px 0 8px; }
+h4 { font-size: 14px; font-weight: 600; }
+.matrix-scroll { border-radius: var(--radius); border-color: var(--border-soft); box-shadow: var(--shadow); background: var(--bg); }
+th, td { border-top-color: var(--border-soft); }
+tbody tr:hover > td, tbody tr:hover > th { background-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); }
+thead th { color: var(--muted); font-weight: 600; font-size: 12.5px; letter-spacing: 0.01em; }
+.dialog { border-radius: 14px; box-shadow: var(--shadow-lg); border-color: var(--border-soft); padding: 20px 24px; }
+.dialog-actions button { padding: 7px 16px; }
+.view-switch { border-radius: 999px; padding: 2px; background: var(--surface); border-color: var(--border-soft); }
+.view-option { border-radius: 999px; background: transparent; padding: 4px 14px; }
+.view-option.selected { background: var(--accent); color: #fff; }
+.edit-bar, .edit-result { border-radius: var(--radius); box-shadow: var(--shadow); border-color: var(--border-soft); background: var(--bg); }
+.app-notice { border-radius: var(--radius-sm); box-shadow: var(--shadow); }
+
+/* Dialogs and preview tables fit the window: no minimum width, text wraps, and the dialog is a little wider. */
+.dialog { width: min(820px, calc(100vw - 32px)); }
+.dialog table, .preview-table { min-width: 0; width: 100%; table-layout: auto; }
+.dialog th, .dialog td, .preview-table th, .preview-table td { white-space: normal; overflow-wrap: anywhere; }
+
+/* Icons next to labels: the screen tabs and the matrix view switch. */
+.icon { flex: none; vertical-align: -3px; margin-right: 6px; }
+.nav button { display: inline-flex; align-items: center; }
+.view-option { display: inline-flex; align-items: center; padding: 6px 14px; }
+.view-option .icon { margin-right: 6px; }
+
+/* One colour per privilege letter (C R W D A T S H), so a row reads at a glance. The state is still carried by fill, outline and text. */
+:root { --p-C: #2e7d32; --p-R: #1565c0; --p-W: #c2410c; --p-D: #c62828; --p-A: #7b1fa2; --p-T: #00838f; --p-S: #c2185b; --p-H: #8d6e00; --p-fg: #ffffff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --p-C: #66bb6a; --p-R: #64b5f6; --p-W: #ffa726; --p-D: #ef5350; --p-A: #ce93d8; --p-T: #4dd0e1; --p-S: #f06292; --p-H: #d4b84a; --p-fg: #0b1620; }
+}
+:root[data-theme="dark"] { --p-C: #66bb6a; --p-R: #64b5f6; --p-W: #ffa726; --p-D: #ef5350; --p-A: #ce93d8; --p-T: #4dd0e1; --p-S: #f06292; --p-H: #d4b84a; --p-fg: #0b1620; }
+.letter[data-priv="Create"] { --p: var(--p-C); } .letter[data-priv="Read"] { --p: var(--p-R); } .letter[data-priv="Write"] { --p: var(--p-W); } .letter[data-priv="Delete"] { --p: var(--p-D); }
+.letter[data-priv="Append"] { --p: var(--p-A); } .letter[data-priv="AppendTo"] { --p: var(--p-T); } .letter[data-priv="Assign"] { --p: var(--p-S); } .letter[data-priv="Share"] { --p: var(--p-H); }
+/* The level the privilege comes from: a mid tint with a solid frame and bold text (lighter than a full fill, clearly stronger than the covered levels below it). */
+.letter[data-priv].letter-granted { background: color-mix(in srgb, var(--p) 50%, var(--bg)); border-color: var(--p); color: var(--text); font-weight: 700; }
+.letter[data-priv].letter-covered { background: color-mix(in srgb, var(--p) 20%, transparent); border-color: transparent; color: var(--p); font-weight: 600; }
+.letter[data-priv].letter-inactive { color: var(--p); font-weight: 600; }
+
+/* Editing is always on: a cell of an editable role is clickable; a role that cannot be edited is marked once. */
+.cell-click { cursor: pointer; }
+.cell-click:hover { background: var(--surface); }
+.role-readonly { font-weight: 400; color: var(--muted); font-size: 12px; white-space: nowrap; cursor: help; }
+
+/* Role Analyzer rows: the role column stays one tidy line per fact; the full text is in the tooltip. */
+.matrix-scroll table { min-width: 0; }
+.matrix-scroll th.sticky { width: 300px; max-width: 300px; min-width: 220px; white-space: normal; }
+.matrix-scroll th, .matrix-scroll td { padding: 6px 8px; }
+.matrix-scroll td.cell { white-space: nowrap; font-size: 13px; }
+
+.legend-letter { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; white-space: nowrap; }
+
+/* A staged (unsaved) change looks like the real thing, with a dashed outline: the target depth is a filled letter, the depths below it are covered. */
+.letter[data-priv].letter-staged { background: color-mix(in srgb, var(--p) 50%, var(--bg)); border-color: var(--p); color: var(--text); font-weight: 700; }
+.letter-pending, .letter-edit.letter-pending[aria-pressed="true"] { outline: 2px dashed var(--p, var(--dm-staged-border)); outline-offset: 0; } /* the pressed-state outline must not hide the unsaved-change indicator */
+
+.instance-holders { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+
+.export-bar { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.export-notice { font-size: 0.9em; color: var(--muted, inherit); }
+.export-manual { width: 100%; font-family: ui-monospace, Consolas, monospace; font-size: 0.85em; }
+
+/* Role Analyzer: the "More filters" panel (theme tokens only, wraps in a narrow host window). */
+.filters { margin: 8px 0; padding: 8px 10px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: var(--surface); }
+.filters > summary { cursor: pointer; font-weight: 600; }
+.filters fieldset { display: flex; flex-wrap: wrap; gap: 4px 12px; border: 0; margin: 8px 0 0; padding: 0; min-width: 0; }
+.filters legend { font-weight: 600; padding: 0; margin-bottom: 4px; color: var(--muted); }
+.filters input[type='search'] { max-width: 100%; width: min(22rem, 100%); }
+.filters button { margin-top: 8px; }
+
+/* Production acknowledgement next to the environment badges (theme tokens only; wraps in a narrow window). */
+.env-ack { display: flex; align-items: flex-start; gap: 8px; flex: 1 1 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; }
+.env-ack input { margin-top: 3px; flex: none; }
+
+/* Preview shortcut pinned below the matrix while a role is being edited (theme tokens only; wraps in a narrow window). */
+.edit-footer { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 8px 0; padding: 8px 12px; border: 1px solid var(--border-soft, var(--border)); border-left: 4px solid var(--accent); border-radius: var(--radius, 4px); background: var(--bg); box-shadow: var(--shadow); }
+.edit-footer button { font: inherit; padding: 4px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); cursor: pointer; }
+.edit-footer button:disabled { opacity: 0.55; cursor: not-allowed; }
+.edit-footer button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* Table title row: the title on the left; who holds the roles (chips) and the one button that reads it on the right. Wraps in a narrow window. */
+.caption-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.users-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 12px; font-weight: 400; font-size: 13px; }
+.users-summary { display: flex; flex-wrap: wrap; gap: 6px; }
+.user-chip { display: inline-flex; align-items: baseline; gap: 4px; padding: 2px 10px; border: 1px solid var(--border-soft); border-radius: 999px; background: var(--surface); color: var(--text); white-space: nowrap; }
+.user-chip strong { font-size: 14px; font-weight: 650; }
+.user-chip-main { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.user-chip-main strong { font-size: 15px; }
+.user-chip-sub, .user-chip-note { color: var(--muted); }
+.user-chip-muted { color: var(--muted); }
+.user-chip-warn { background: var(--warn-bg); color: var(--warn-text); border-color: transparent; }
+.users-hint { color: var(--muted); font-style: italic; }
+.users-progress-box { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
+.users-progress { width: 120px; height: 6px; accent-color: var(--accent); }
+.users-button { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-weight: 600; padding: 5px 14px; border: 1px solid var(--accent); border-radius: var(--radius-sm, 6px); background: transparent; color: var(--accent); cursor: pointer; }
+.users-button:hover:not(:disabled) { background: var(--accent-soft); }
+.users-button.primary { color: #ffffff; }
+.users-button:disabled { opacity: 0.7; cursor: progress; }
+.users-button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.users-button.is-busy .icon { animation: dsm-spin 1s linear infinite; }
+@keyframes dsm-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .users-button.is-busy .icon { animation: none; } }
+/* Who holds a role, under its name: wraps instead of being cut off with an ellipsis. */
+.matrix-scroll .meta { white-space: normal; overflow: visible; text-overflow: clip; max-width: 340px; line-height: 1.35; }
+
+/* Expand / collapse control next to a role (and a Business Unit copy): a round chevron button that turns when open, instead of a bordered box with a glyph. */
+.twisty { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; margin-right: 4px; vertical-align: middle; border: 1px solid transparent; border-radius: 50%; background: var(--accent-soft); color: var(--accent); cursor: pointer; transition: background-color 120ms ease, border-color 120ms ease; }
+.twisty .icon { width: 16px; height: 16px; stroke-width: 2.2; transition: transform 140ms ease; }
+.twisty[aria-expanded="true"] .icon { transform: rotate(90deg); }
+.twisty:hover { border-color: var(--accent); }
+.twisty:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .twisty, .twisty .icon { transition: none; } }
+@media (forced-colors: active) { .twisty { border-color: ButtonText; background: ButtonFace; color: ButtonText; } }
+
+/* Round refresh button next to the name of a person or team (icon only; the arrow turns while it reads). */
+.refresh-round { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--border-soft, var(--border)); border-radius: 50%; background: var(--accent-soft); color: var(--accent); cursor: pointer; transition: border-color 120ms ease, background-color 120ms ease; }
+.refresh-round .icon { width: 18px; height: 18px; stroke-width: 2.1; }
+.refresh-round:hover:not(:disabled) { border-color: var(--accent); }
+.refresh-round:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.refresh-round:disabled { cursor: progress; opacity: 0.85; }
+.refresh-round.is-busy .icon { animation: dsm-spin 1s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .refresh-round.is-busy .icon { animation: none; } .refresh-round { transition: none; } }
+@media (forced-colors: active) { .refresh-round { border-color: ButtonText; background: ButtonFace; color: ButtonText; } }
+.env-retry { margin-left: 8px; font: inherit; padding: 1px 10px; border: 1px solid var(--accent); border-radius: 999px; background: transparent; color: var(--accent); cursor: pointer; }
+.env-retry:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
