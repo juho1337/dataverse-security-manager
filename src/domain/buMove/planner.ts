@@ -33,8 +33,9 @@ import { buName, cmp, explainUserAccess } from './userAccess';
 // request and has no write flag. Roles are matched by id, lineage and privileges, never by name alone; a same-name role with different
 // privileges is a warning that needs confirmation; nothing is substituted silently and no role is granted unless it was selected.
 // Behaviour that Microsoft documents only conditionally is stated as an expectation with its basis.
-// Business Unit move planner: when a user moves, which roles are expected to survive and which are assigned again in the target unit. Real-environment behaviour is UNVERIFIED
-// until the approved write-test plan (S3) runs.
+// Business Unit move planner: when a user moves, which roles are expected to survive and which are assigned again in the target unit. Real-environment evidence (S3, 2026-11-03/04, issue #325): Dataverse
+// removed the user's direct roles on a move and the lineage restoration re-assigned the target unit's copies. Everything else a move may do is
+// NOT verified (see ALWAYS_CANNOT_VERIFY below).
 
 export const ALWAYS_CANNOT_VERIFY: readonly string[] = [
   'What happens to roles when record ownership across business units is off (the documentation describes the settings only for the on case).',

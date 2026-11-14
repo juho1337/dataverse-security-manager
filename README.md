@@ -5,7 +5,7 @@ See who has access to what in Dataverse, and change it safely. A [Power Platform
 | Module | Use it to |
 |---|---|
 | **Role Analyzer** | Compare a table's privileges across all security roles (Privilege and Depth matrix), see who holds each role, edit privileges of one or several roles at once |
-| **Access Explorer** | Inspect a user or team: direct and team roles, table privileges and where each one comes from; add or remove direct roles; compare two users |
+| **Access Explorer** | Inspect a user or team: direct and team roles, table privileges and where each one comes from; add or remove direct roles, per Business Unit and for several users at once; compare two users |
 | **BU Manager** | Move users to another Business Unit and restore their roles, with a per-user dry run first |
 | **Operations** | Review every change, copy a ticket-ready report, restore a change |
 
@@ -13,7 +13,21 @@ Unlike a plain role editor, it starts from the table ("who can do what on `accou
 
 ## Other tools for security roles
 
-Other PPTB tools also show and edit security roles and role assignments, for example Advanced Security Roles Explorer and User Security Manager. This tool does not replace them for everything: it differs in that it explains where each privilege comes from, moves users between Business Units and restores their roles, and keeps a history of every change that can be restored. Pick the tool that fits the task; they can be installed side by side.
+Security Roles Explorer and User Access Explorer, also in the PPTB Marketplace, cover overlapping role analysis, table privileges and role assignments. User Access Explorer also shows where privileges come from: provenance alone is **not** unique to this tool. We have not compared the tools feature by feature; choose the one that fits your workflow.
+
+Dataverse Security Manager brings these capabilities together:
+
+- **Role holder analysis:** start with a table and security role, then inspect who holds that role directly or through teams, with user counts, team paths and Business Unit context.
+- **Business Unit-aware role assignments:** select an exact BU-specific role instance and assign roles to several users. Cross-BU assignments are offered only when Dataverse's setting allows them. Assigning roles of the user's own Business Unit, a role of a different Business Unit, and roles to several users at once were each confirmed by the owner in the real host; the scenarios were not itemised and bulk assignment across different Business Units was not separately verified (see Testing).
+- **Guided Business Unit moves:** preview a user's move, map the matching roles in the target BU, execute and verify the result.
+- **Multi-role privilege editing:** stage privilege changes on several roles for one table in one review, then apply and verify each role separately.
+- **Restorable change history:** record changes with before/after state and refuse unsafe restoration when the target has since changed.
+
+These are the tool's practical strengths, not claims that each individual feature is exclusive. The tools can be installed side by side.
+
+## Testing
+
+The write operations were run by hand in PPTB Desktop against a real Developer Dataverse environment with test-owned data, and checked by the tool's read-back and, for most, by an independent read of Dataverse. Role assignment from the user's own and from a different Business Unit, and assignment to several users at once, were confirmed by the owner in the real host (scenario details and an independent read are not recorded; bulk assignment across different Business Units was not separately verified). Known limits: editing several roles at once has no independent read yet, restoring a Business Unit move and most side effects of a move (teams, owned records, manager) are not tested in a real environment. Details: [Testing evidence](https://github.com/juho1337/dataverse-security-manager/blob/main/docs/testing-evidence.md).
 
 ## What this tool changes
 It writes to Dataverse only after you preview and confirm, and only these kinds of change:

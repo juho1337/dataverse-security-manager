@@ -20,8 +20,11 @@ import { normalizeGuid, type IdentityResult } from '../identity';
 //      equals the approved environment of the confirmation;
 //   3. the host call the adapter makes is on the allow-list for this write's kind AND targets exactly the records named
 //      in the planned write (the adapter cannot widen a write, e.g. to another user, role or Business Unit).
-// Request shapes below are the documented Dataverse operations; their behaviour on the real host is UNVERIFIED until the
-// approved write-test plan (#276) is executed. Nothing here claims success: a call that returns yields `notVerified`.
+// Request shapes below are the documented Dataverse operations. They were exercised against a real Developer environment through PPTB Desktop:
+// role privilege add/change/remove (S1), direct role assign/remove (S2), Business Unit move (S3) and a partly failed batch (S4) on 2026-11-03/04, and
+// the restore scenarios R1-R10, X1 and X3-X7 on 2026-11-10 (issue #325; docs/testing-evidence.md). Not exercised in the real host: a failing
+// step in the MIDDLE of a batch followed by a successful one, and the restore of a Business Unit move (synthetic tests only).
+// Nothing here claims success: a call that returns yields `notVerified`; only a re-read can verify.
 
 /** Structural subset of the host Dataverse API this boundary may touch. Everything else is deliberately absent. */
 export interface RawWriteApi {
@@ -109,7 +112,7 @@ function idIs(value: unknown, id: string): boolean {
   return typeof value === 'string' && normalizeId(value) === normalizeId(id);
 }
 
-/** Exact structural validation of the supported request shapes (shapes UNVERIFIED on the real host until the write-test plan runs). */
+/** Exact structural validation of the supported request shapes (the shapes were accepted by the real host in the S1-S4 tests, see the header). */
 function validateAddPrivilege(request: WriteExecuteRequest, write: Extract<PlannedWrite, { kind: 'addPrivilege' }>): string | null {
   const params = asRecord(request.parameters);
   if (!params || !hasKeys(params, ['Privileges'])) return 'AddPrivilegesRole takes exactly one Privileges parameter.';
@@ -139,7 +142,8 @@ function validateRemovePrivilege(request: WriteExecuteRequest, write: Extract<Pl
  * A Business Unit move is an Update of `systemuser.businessunitid` ALONE (architecture decision D13: Microsoft marks SetBusinessSystemUser
  * deprecated and names Update as its replacement, so the deprecated action is not allowed). The record must be exactly the lookup bind to
  * the planned target Business Unit; nothing else may be written to the user. What the update does to roles, teams, record ownership and
- * the manager's direct reports is UNVERIFIED until write-test S3 runs.
+ * the manager's direct reports: the S3 test (2026-11-03/04) confirmed only that Dataverse removes the user's direct roles on a change of
+ * Business Unit; the effect on teams, owned records and the manager's direct reports was NOT examined and is not claimed.
  */
 const BU_BIND = /^\/?businessunits\(\{?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\}?\)$/i;
 

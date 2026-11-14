@@ -17,7 +17,7 @@ export interface HostIdentityInfo {
   readonly candidateConnectionCount: number;
   /** Organization id read from Dataverse itself; null when it could not be read. */
   readonly organizationId: string | null;
-  /** Environment id from Dataverse/host; null when not exposed or unreadable (UNVERIFIED whether it can be read). */
+  /** Environment id from Dataverse/host; null when not exposed or unreadable (it could be read in PPTB Desktop 1.2.7, where the writes of the acceptance tests were allowed only after all three identifiers matched). */
   readonly environmentId: string | null;
 }
 
@@ -148,8 +148,8 @@ function str(row: Record<string, unknown> | undefined, key: string): string | nu
 
 /**
  * Collects the identity facts through the read-only host: the organization id from Dataverse's organization row, the environment id from
- * the RetrieveCurrentOrganization read function. UNVERIFIED on the real host: that its execute wrapper runs the function; until it does the
- * environment id stays unverifiable and writes are refused (fail closed).
+ * the RetrieveCurrentOrganization read function. Verified on the real host (PPTB Desktop 1.2.7, 2026-11-03 to 11-11): the call runs and
+ * the environment id is read; where it cannot be read the environment id stays unverifiable and writes are refused (fail closed).
  */
 export async function readConnectionIdentity(connections: ConnectionsLike | undefined): Promise<HostIdentityInfo> {
   const none = { organizationId: null, environmentId: null };

@@ -307,3 +307,51 @@ describe('operation history: a step the re-read decides FAILED never keeps failu
     expect(analyzeOperation(rec!).advice[0]?.reason).not.toContain('(none)');
   });
 });
+
+describe('planAssignments across business units', () => {
+  const north: Role = { ...role('r-contrib-north'), parentRootRoleId: 'r-contrib' };
+  const hq: Role = { ...role('r-contrib'), parentRootRoleId: 'r-contrib' };
+  const cara = accessOf(snapshot(), 'u-cara'); // home Contoso, holds the Contoso copy of Project Contributor directly
+  const input = { access: cara, catalog: [north, hq], businessUnits: SYNTHETIC_ACCESS_SNAPSHOT.businessUnits, requests: [{ action: 'assign' as const, roleId: 'r-contrib-north' }] };
+
+  it('assigns the exact role record of another unit when assignment across units is on, naming that unit', () => {
+    const p = planAssignments({ ...input, crossBuAssignment: true });
+    expect(p.items[0]).toMatchObject({ status: 'planned', roleId: 'r-contrib-north', businessUnitName: 'North', businessUnitId: 'bu-north' });
+    expect(p.plan?.writes[0]?.key).toBe('assignRole:u-cara:r-contrib-north');
+    expect(p.plan?.writes[0]?.description).toContain('(North)');
+  });
+
+  it('keeps the refusal, with the reason, when the setting is off or could not be read', () => {
+    for (const [value, text] of [[false, 'turned off'], [null, 'could not be read'], [undefined, 'could not be read']] as const) {
+      const p = planAssignments({ ...input, ...(value === undefined ? {} : { crossBuAssignment: value }) });
+      expect(p.items[0]?.status).toBe('refused');
+      expect(p.items[0]?.reason).toContain(text);
+      expect(p.plan).toBeNull();
+    }
+  });
+
+  it('allows the same logical role from two units: the home copy is held, the other unit’s copy is a separate assignment', () => {
+    const p = planAssignments({ ...input, crossBuAssignment: true });
+    expect(p.items).toHaveLength(1); // the held Contoso copy is not touched or repeated
+    expect(cara.directRoles.map((g) => g.role.id)).toContain('r-contrib');
+  });
+
+  it('removes only the one concrete role record, never another unit’s copy of the same role', () => {
+    const both = accessOf(snapshot({ directAssignments: [...SYNTHETIC_ACCESS_SNAPSHOT.directAssignments, { userId: 'u-cara', roleId: 'r-contrib-north' }] }), 'u-cara');
+    const p = planAssignments({ access: both, catalog: [north, hq], businessUnits: SYNTHETIC_ACCESS_SNAPSHOT.businessUnits, crossBuAssignment: true, requests: [{ action: 'unassign', roleId: 'r-contrib-north' }] });
+    expect(p.plan?.writes.map((w) => w.key)).toEqual(['unassignRole:u-cara:r-contrib-north']);
+    expect(p.items[0]).toMatchObject({ status: 'planned', businessUnitName: 'North' });
+  });
+
+  it('never resolves by role name: two roles with one name are two different assignments', () => {
+    const twin: Role = { ...north, id: 'r-twin', name: hq.name };
+    const p = planAssignments({ ...input, catalog: [north, hq, twin], crossBuAssignment: true, requests: [{ action: 'assign', roleId: 'r-contrib-north' }, { action: 'assign', roleId: 'r-twin' }] });
+    expect(p.plan?.writes.map((w) => w.key).sort()).toEqual(['assignRole:u-cara:r-contrib-north', 'assignRole:u-cara:r-twin']);
+  });
+
+  it('a team-derived role is not removable as a direct assignment', () => {
+    const p = planAssignments({ access: cara, catalog: catalogHq, businessUnits: SYNTHETIC_ACCESS_SNAPSHOT.businessUnits, crossBuAssignment: true, requests: [{ action: 'unassign', roleId: 'r-basic' }] });
+    expect(p.items[0]).toMatchObject({ status: 'notAssigned', alsoViaTeam: true });
+    expect(p.plan).toBeNull();
+  });
+});

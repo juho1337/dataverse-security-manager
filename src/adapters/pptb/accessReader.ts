@@ -2,7 +2,7 @@ import { explainUserAccess } from '../../domain/buMove/userAccess';
 import type { BusinessUnit, Role, SecuritySnapshot, Team, TeamType, UserAccess, UserSummary } from '../../domain/buMove/types';
 import type { PrivilegeId } from '../../domain/privileges';
 import type { RoleGrantRecord, RoleGrantsData } from '../../domain/tablePrivileges';
-import { ROLE_LIST_LIMIT, SEARCH_LIMIT, TEAM_MEMBER_LIMIT, type AccessReader, type NameRequest, type ReadResult, type ResolvedNames, type RoleRef, type TeamAccess, type TeamSummary, type UserHit } from '../../ports/accessReader';
+import { ROLE_LIST_LIMIT, SEARCH_LIMIT, TEAM_MEMBER_LIMIT, type AccessReader, type AssignmentContext, type NameRequest, type ReadResult, type ResolvedNames, type RoleRef, type TeamAccess, type TeamSummary, type UserHit } from '../../ports/accessReader';
 import { lockedEnvironment, type ApprovedEnvironment } from './config';
 import type { HostWindow } from './connection';
 import { classifyHostError, ConnectionChangedError, toPortErrorClass, withRetry, type ClassifiedError, type RetryOptions } from './errors';
@@ -14,11 +14,11 @@ import { createReadOnlyHost, type ReadOnlyHost } from './readOnlyHost';
 
 // Read-only Access Explorer reader over the PPTB host (issue #269). Same guard as the Role Analyzer reader: the environment identity
 // check first, a connection fingerprint bracketing every host request, retries for transient errors, and only the ReadOnlyHost facade.
-// UNVERIFIED against the real host (no live evidence exists for this reader; it is tested against a fake host only):
-//  - the shape of lookup columns in FetchXML results (`businessunitid` vs `_businessunitid_value`; both are accepted) and of aliased
-//    link-entity columns (`bu.name` vs `bu_x002e_name`; both are accepted),
-//  - that the intersect tables systemuserroles, teamroles and teammembership can be queried with FetchXML on their id columns,
-//  - FetchXML `top` and `like` behaviour, and paging (see paging.ts).
+// Real-host evidence (docs/testing-evidence.md): the read shapes below were checked read-only against a Developer environment in PPTB Desktop on
+// 2026-11-03/04 (issue #325, S1-S4), and the Access Explorer ran against it in the 2026-11-10 acceptance. Established there: lookup columns are
+// selected as `_x_value`; a link-entity column comes back as `alias.column`; a fetch ROOTED at an intersect table (systemuserroles, teamroles,
+// teammembership, roleprivileges) is a 404, so those are read from role/systemuser/team through a link-entity.
+// Still not covered by real-host evidence: result sets above the 5000-row FetchXML limit (see paging.ts) and error shapes other than "not found".
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const IN_CHUNK = 50;
@@ -75,6 +75,19 @@ const inValues = (ids: readonly string[]) => ids.map((v) => `<value>${xml(v)}</v
 
 // ---- FetchXML builders (exported for tests)
 const paged = (p: number, size: number) => `<fetch page="${p}" count="${size}">`;
+
+export function businessUnitsForAssignmentFetch(p: number, size: number): string {
+  return `${paged(p, size)}<entity name="businessunit"><attribute name="businessunitid"/><attribute name="name"/><attribute name="parentbusinessunitid"/><attribute name="isdisabled"/><order attribute="businessunitid"/></entity></fetch>`;
+}
+export const organizationSettingsFetch = '<fetch top="1"><entity name="organization"><attribute name="organizationid"/><attribute name="orgdborgsettings"/></entity></fetch>';
+
+/** `EnableOwnershipAcrossBusinessUnits` from the organization's settings XML: true/false only when it is stated; anything else is unknown (null). */
+export function crossBuSettingOf(settingsXml: unknown): boolean | null {
+  if (typeof settingsXml !== 'string') return null;
+  const m = /<EnableOwnershipAcrossBusinessUnits>\s*(true|false|1|0)\s*<\/EnableOwnershipAcrossBusinessUnits>/i.exec(settingsXml);
+  const v = m?.[1]?.toLowerCase();
+  return v === undefined ? null : v === 'true' || v === '1';
+}
 
 export function userSearchFetch(query: string): string {
   const like = `%${xml(likeEscape(query))}%`;
@@ -426,6 +439,29 @@ export class PptbAccessReader implements AccessReader {
     });
   }
 
+  async loadAssignmentContext(): Promise<ReadResult<AssignmentContext>> {
+    const cid = this.nextId();
+    return this.guarded(cid, async (s) => {
+      this.trace({ correlationId: cid, step: 'loadAssignmentContext' });
+      const gaps: string[] = [];
+      const rows = (await this.section(s, businessUnitsForAssignmentFetch, 'business units', gaps)).rows;
+      const businessUnits: BusinessUnit[] = rows.flatMap((r) => {
+        const b = id(r, 'businessunitid');
+        return b ? [{ id: b, name: text(r, 'name') ?? '(unnamed business unit)', parentId: lookup(r, 'parentbusinessunitid'), isDisabled: r['isdisabled'] === true }] : [];
+      });
+      let crossBuAssignment: boolean | null = null;
+      try {
+        const org = (await this.call(s, () => this.host.fetchXmlQuery(organizationSettingsFetch))).value ?? [];
+        crossBuAssignment = crossBuSettingOf(org[0]?.['orgdborgsettings']);
+      } catch (e) {
+        if (classifyHostError(e).kind === 'connectionChanged') throw e;
+      }
+      if (crossBuAssignment === null) gaps.push('Whether roles of other business units may be assigned could not be read; only the user’s own business unit is offered.');
+      const data: AssignmentContext = { businessUnits, crossBuAssignment };
+      return gaps.length > 0 ? { status: 'partial', data, notes: withRef(unique(gaps), cid) } : { status: 'ok', data };
+    });
+  }
+
   async listRolesOfBusinessUnit(businessUnitId: string): Promise<ReadResult<readonly Role[]>> {
     const cid = this.nextId();
     if (!GUID.test(businessUnitId)) return { status: 'error', errorClass: 'notFound', message: `"${businessUnitId}" is not a valid business unit id. (ref ${cid})` };
@@ -662,7 +698,7 @@ export function createPptbAccessReader(host: HostWindow | undefined, options: Pp
       errorClass: 'unknown',
       message: 'The PPTB host Dataverse API is not available in this context.',
     });
-    return { searchUsers: () => unavailable(), searchTeams: () => unavailable(), loadUserAccess: () => unavailable(), loadTeamAccess: () => unavailable(), listRolesOfBusinessUnit: () => unavailable(), loadRoleGrants: () => unavailable() };
+    return { searchUsers: () => unavailable(), searchTeams: () => unavailable(), loadUserAccess: () => unavailable(), loadTeamAccess: () => unavailable(), loadAssignmentContext: () => unavailable(), listRolesOfBusinessUnit: () => unavailable(), loadRoleGrants: () => unavailable() };
   }
   return new PptbAccessReader(createReadOnlyHost(api), host?.toolboxAPI?.connections, options);
 }

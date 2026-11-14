@@ -9,6 +9,8 @@ interface Props {
   /** Every role of the user's Business Unit. */
   readonly roles: readonly Role[];
   readonly businessUnitName: string;
+  /** The target unit is the user's own; otherwise the roles are another unit's copies and are named as such. */
+  readonly isHome?: boolean;
   /** Normalized ids of the roles the user already holds directly. */
   readonly heldIds: ReadonlySet<string>;
   /** Normalized ids staged to be added. */
@@ -24,7 +26,7 @@ interface Props {
  * the row does the same), a search that filters the table, and a status column that tells assigned from assignable. Choosing only stages a
  * change: nothing is written until the preview is confirmed. The list scrolls inside the table area, so the actions above it stay in view.
  */
-export function RolePicker({ roles, businessUnitName, heldIds, stagedIds, blockedReason, onToggle, onClose }: Props) {
+export function RolePicker({ roles, businessUnitName, isHome = true, heldIds, stagedIds, blockedReason, onToggle, onClose }: Props) {
   const [query, setQuery] = useState('');
   const searchId = useId();
   const matches = useMemo(() => {
@@ -47,7 +49,7 @@ export function RolePicker({ roles, businessUnitName, heldIds, stagedIds, blocke
         <button type="button" onClick={onClose}>Done</button>
       </div>
       {blockedReason && <p className="access-partial" role="note">{blockedReason}</p>}
-      <p className="access-hint role-picker-info">A user can hold only the roles of their own business unit. To give a role of another business unit, move the user there first in BU Manager.</p>
+      <p className="access-hint role-picker-info">{isHome ? 'Roles are chosen per business unit: each role below is the copy that belongs to this unit. Change the target unit above to add roles of another unit.' : 'These are the copies of the roles that belong to this business unit, not the user’s home unit. The exact role of this unit is assigned.'}</p>
       <div className="role-picker-search">
         <label htmlFor={searchId}>Search roles</label>
         <span className="search-field">

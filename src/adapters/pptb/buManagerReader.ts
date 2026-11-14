@@ -12,10 +12,10 @@ import { depthFromMask, privilegeFetch } from './reader';
 
 // Read side of the BU Manager over the PPTB host (issues #271, #273). It extends the Access Explorer reader (same identity check, connection
 // fingerprint around every request, retry and paging; read-only facade only) with the reads the planner needs. Every read is fresh.
-// UNVERIFIED against the real host (tested against a fake host only; the first real run is write-test S3 preparation):
-//  - FetchXML on the intersect tables systemuserroles / teammembership / teamroles by id columns, and `isdefault`/`teamtype` filters on team,
-//  - the shape of lookup columns (`businessunitid` vs `_businessunitid_value`) and of `parentbusinessunitid` / `parentrootroleid`,
-//  - the size and speed of the privilege catalog read (all tables) and of the role privileges of the compared roles.
+// Real-host evidence (docs/testing-evidence.md): these reads ran in PPTB Desktop against a Developer environment for the BU move scenario S3 (2026-11-03/04,
+// issue #325) and for the BU Manager acceptance of 2026-11-10: the intersect tables via link-entities, the lookup shapes and
+// `parentrootroleid` (set on every role; a root names itself). Not covered by real-host evidence: very large environments (many thousands of
+// users or roles).
 // The organization-level security settings that change what a move does to roles are NOT read: they stay `null` (unknown) and the planner
 // states what a move is expected to do as an expectation with its basis, never as a certainty.
 

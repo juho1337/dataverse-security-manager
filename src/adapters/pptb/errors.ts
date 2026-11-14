@@ -1,7 +1,7 @@
 import type { ErrorClass } from '../../ports/securityDataReader';
 
 // The host documents no error classes (every failure is a rejected promise), so classification is by the
-// status code and message text the rejection carries. UNVERIFIED against the real host; unknown stays `unknown`.
+// status code and message text the rejection carries. Seen on the real host: a missing record (S4) is classified as `notFound`; the other classes follow documented status codes and are not all observed there. Unknown stays `unknown`.
 
 export type HostErrorKind = 'auth' | 'permission' | 'throttled' | 'network' | 'notFound' | 'connectionChanged' | 'unknown';
 

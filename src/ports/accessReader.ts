@@ -1,4 +1,4 @@
-import type { Role, TeamType, UserAccess, UserSummary } from '../domain/buMove/types';
+import type { BusinessUnit, Role, TeamType, UserAccess, UserSummary } from '../domain/buMove/types';
 import type { RoleGrantsData } from '../domain/tablePrivileges';
 import type { ReadResult } from './securityDataReader';
 
@@ -52,6 +52,12 @@ export interface ResolvedNames {
   readonly roles: ReadonlyMap<string, string>;
 }
 
+/** What the role picker needs to offer a target Business Unit: the units, and whether roles of other units may be assigned (null = could not be read). */
+export interface AssignmentContext {
+  readonly businessUnits: readonly BusinessUnit[];
+  readonly crossBuAssignment: boolean | null;
+}
+
 export interface AccessReader {
   /** Users whose name or email contains `query` (disabled and application users included). Results are capped; a cap is reported as partial. */
   searchUsers(query: string): Promise<ReadResult<readonly UserHit[]>>;
@@ -62,6 +68,7 @@ export interface AccessReader {
   /** Roles and (capped) members of one team. */
   loadTeamAccess(teamId: string): Promise<ReadResult<TeamAccess>>;
   /** The role records of one Business Unit (a role can only be assigned to users of the Business Unit it belongs to). Capped; a cap is reported as partial. */
+  loadAssignmentContext?(): Promise<ReadResult<AssignmentContext>>;
   listRolesOfBusinessUnit?(businessUnitId: string): Promise<ReadResult<readonly Role[]>>;
   /**
    * The explicit table privileges of the given role instances (every table and operation, with the depth), the privilege catalog that says which

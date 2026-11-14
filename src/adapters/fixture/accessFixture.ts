@@ -2,7 +2,7 @@ import { explainUserAccess } from '../../domain/buMove/userAccess';
 import type { BusinessUnit, Role, SecuritySnapshot, Team, TeamType, UserAccess, UserSummary } from '../../domain/buMove/types';
 import type { PrivilegeId } from '../../domain/privileges';
 import type { RoleGrantRecord, RoleGrantsData } from '../../domain/tablePrivileges';
-import { SEARCH_LIMIT, TEAM_MEMBER_LIMIT, type AccessReader, type NameRequest, type ReadResult, type ResolvedNames, type RoleRef, type TeamAccess, type TeamSummary, type UserHit } from '../../ports/accessReader';
+import { SEARCH_LIMIT, TEAM_MEMBER_LIMIT, type AccessReader, type AssignmentContext, type NameRequest, type ReadResult, type ResolvedNames, type RoleRef, type TeamAccess, type TeamSummary, type UserHit } from '../../ports/accessReader';
 
 // Synthetic Access Explorer data for demo mode and tests: fictional people, teams and roles (example.test addresses, no customer or
 // legacy material). Deliberate cases: a role held directly AND through a team, a role only through a default team, an access team
@@ -149,6 +149,11 @@ export class FixtureAccessReader implements AccessReader {
     if (!this.snapshot.users.some((u) => u.id === userId)) return { status: 'error', errorClass: 'notFound', message: 'The user was not found.' };
     const access = explainUserAccess(this.snapshot, userId);
     return access.isComplete ? { status: 'ok', data: access } : { status: 'partial', data: access, notes: access.warnings };
+  }
+
+  async loadAssignmentContext(): Promise<ReadResult<AssignmentContext>> {
+    await sleep(this.latencyMs);
+    return { status: 'ok', data: { businessUnits: this.snapshot.businessUnits, crossBuAssignment: this.snapshot.settings.enableOwnershipAcrossBusinessUnits } };
   }
 
   async listRolesOfBusinessUnit(businessUnitId: string): Promise<ReadResult<readonly Role[]>> {

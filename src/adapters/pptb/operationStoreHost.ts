@@ -4,8 +4,8 @@ import type { OperationRecord } from '../../domain/history/types';
 import type { OperationStore, OperationStoreInfo } from '../../ports/operationStore';
 
 // Operation ledger in the PPTB host's per-tool settings (`window.toolboxAPI.settings`, documented in @pptb/types 1.2.7: getAll, get,
-// set, setAll; "any JSON-serializable value"). UNVERIFIED on a real host: that the values survive restarts, size limits, whether
-// several open instances share the key. Therefore the UI says so and offers export.
+// set, setAll; "any JSON-serializable value"). Real-host evidence (issue #325, 2026-11-04): the history persisted across sessions (17 records observed). UNVERIFIED: size limits, and
+// whether several open instances share the key. Therefore the UI says so and offers export.
 
 /** The part of `toolboxAPI.settings` used here (structural, so tests can fake it). */
 export interface HostSettings {

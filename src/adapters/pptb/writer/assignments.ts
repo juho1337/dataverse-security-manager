@@ -6,9 +6,10 @@ import { USER_ROLE_RELATIONSHIP, type WriteBoundary } from './boundary';
 // boundary (confirmation, fresh full identity check, exact allow-listed call). It never claims success: a host call that returns yields
 // `notVerified`; the application re-reads the user's roles to verify.
 //
-// associate / disassociate through the `systemuserroles_association` relationship are the documented many-to-many calls. UNVERIFIED on the
-// real host until write-test S2 runs: the exact relationship name, and the error a duplicate assignment produces (the application plans
-// "already assigned" as a skip from a read, so a duplicate association is never sent on purpose).
+// associate / disassociate through the `systemuserroles_association` relationship are the documented many-to-many calls. Real-host evidence (S2,
+// 2026-11-03/04, issue #325; docs/testing-evidence.md): assign and remove were verified by re-read and by an independent Dataverse read. NOT
+// observed: the error a duplicate assignment produces (the application plans "already assigned" as a skip from a read, so a duplicate
+// association is never sent on purpose; that skip is covered by synthetic tests only).
 // Team role assignment is deliberately not part of the five approved write kinds and is not implemented here.
 
 /** The writes this module implements; the other methods of the port come from the privilege and Business Unit move writers. */

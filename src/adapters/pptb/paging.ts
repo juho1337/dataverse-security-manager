@@ -1,7 +1,8 @@
 import { classifyHostError, type ClassifiedError } from './errors';
 
 // How a list read walks all pages is the least certain part of the host contract.
-// UNVERIFIED (to be settled by the read integration test on the Developer environment):
+// Paging against the real host: reads of the test environment returned complete results in PPTB Desktop (issue #325), but no result set above the
+// 5000-row FetchXML limit was available, so the following stays UNVERIFIED:
 //  - whether the host returns every page or only the first 5000 rows of a FetchXML query,
 //  - whether the `page` attribute is honored without the paging cookie,
 //  - how (or whether) `queryData` exposes a next link; the types declare none, so this strategy uses FetchXML only.

@@ -85,7 +85,7 @@ export function createSyntheticBuManagerReader(options: FixtureBuManagerOptions 
 export interface FakeEnvironmentOptions {
   readonly snapshot?: SecuritySnapshot;
   readonly privileges?: readonly RolePrivilege[];
-  /** Roles of the user that the service removes when the Business Unit changes (what Dataverse documents for some settings; UNVERIFIED here). */
+  /** Roles of the user that the service removes when the Business Unit changes (the real host confirmed that direct roles are removed on a move, issue #325 S3; this fake only models it). */
   readonly removeRolesOnMove?: boolean;
   /** Fail the nth write (1-based) of a kind with this result. */
   readonly failWrite?: { readonly kind: 'moveUser' | 'assignRole'; readonly nth?: number; readonly result: OperationResult };

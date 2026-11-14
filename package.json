@@ -1,6 +1,6 @@
 {
   "name": "@juho1337/dataverse-security-manager",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "displayName": "Dataverse Security Manager",
   "description": "Analyze and manage Dataverse security: role privilege matrix by table, user and team access with provenance, Business Unit moves with role restoration, and a restorable change history.",

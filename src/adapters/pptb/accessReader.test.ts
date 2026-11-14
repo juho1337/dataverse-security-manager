@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { APPROVED, connections, createFakeDataverse } from '../../test/fakeDataverse';
 import { APPROVED_DEVELOPER_ENVIRONMENT } from './config';
-import { PptbAccessReader, createPptbAccessReader, userSearchFetch } from './accessReader';
+import { PptbAccessReader, createPptbAccessReader, userSearchFetch, crossBuSettingOf } from './accessReader';
 import { intersectLink, rejectRootIntersect, shapeIntersectRow } from '../../test/intersectFake';
 import { createPageNumberStrategy } from './paging';
 import { createReadOnlyHost } from './readOnlyHost';
@@ -401,5 +401,14 @@ describe('intersect tables are read through a parent link (the real host answers
     for (const name of ['systemuserroles', 'teamroles', 'teammembership']) {
       expect(fetches.some((f) => new RegExp(`<link-entity name="${name}"[^>]*intersect="true"`).test(f))).toBe(true);
     }
+  });
+});
+
+describe('crossBuSettingOf', () => {
+  const xml = (v: string) => `<organization><EnableOwnershipAcrossBusinessUnits>${v}</EnableOwnershipAcrossBusinessUnits></organization>`;
+  it('reads true/false and the numeric forms 1/0, and is unknown otherwise', () => {
+    expect([xml('true'), xml('True'), xml('1')].map(crossBuSettingOf)).toEqual([true, true, true]);
+    expect([xml('false'), xml('0')].map(crossBuSettingOf)).toEqual([false, false]);
+    expect([xml('maybe'), '<organization/>', undefined, 5].map(crossBuSettingOf)).toEqual([null, null, null, null]);
   });
 });

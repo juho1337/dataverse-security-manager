@@ -1,10 +1,16 @@
-import type { Role, RoleGrant, UserAccess } from '../../domain/buMove/types';
+import type { BusinessUnit, Role, RoleGrant, Tri, UserAccess } from '../../domain/buMove/types';
 import { createWritePlan, normalizeId, plannedWrite, type PlannedWrite, type WritePlan } from '../../domain/operations';
 
 // Planner of direct role assignment and removal for one user (issue #270). Pure: it decides from a user's access (as read) and the roles on
 // offer, never from assumptions, and never sends anything. Idempotent: a role the user already holds directly is "already assigned" and a
 // role they do not hold directly is "not assigned"; neither produces a write. A role can only be assigned to a user of the Business Unit the
-// role belongs to (roles are Business-Unit-specific instances), so a role from another unit is refused, naming the right instance when known.
+// role belongs to (roles are Business-Unit-specific instances), so a role from another unit is refused, naming the right instance when known,
+// UNLESS the environment allows role assignment across business units (the "record ownership across business units" setting, read as a
+// tri-state): then the concrete role record of the chosen unit is assigned. Anything but a read `true` keeps the refusal (fail closed).
+// A role is always identified by its own roleid; the name is display only, and the same logical role can be held from several units.
+// Real-host evidence (2026-11-15, docs/testing-evidence.md): the owner assigned roles of the user's home unit, a role of a different unit, and roles to
+// several users at once through the tool (scenario details not recorded). NOT separately verified in a real environment: bulk assignment across different
+// units, removal of another unit's role, the refusal paths and other unit configurations (synthetic tests only).
 
 export type AssignmentAction = 'assign' | 'unassign';
 
@@ -20,6 +26,8 @@ export interface PlanItem {
   readonly roleId: string;
   readonly roleName: string;
   readonly businessUnitName: string;
+  /** The Business Unit the concrete role record belongs to (null when it is not known). */
+  readonly businessUnitId: string | null;
   readonly status: PlanItemStatus;
   /** Plain language: why this item is, or is not, going to be written. */
   readonly reason: string;
@@ -43,10 +51,16 @@ export interface PlanInput {
   /** The roles that may be offered for assignment (the user's Business Unit). Roles the user already holds are known from `access`. */
   readonly catalog: readonly Role[];
   readonly requests: readonly AssignmentRequest[];
+  /** Whether roles of other Business Units may be assigned (null = could not be read, treated as not allowed). */
+  readonly crossBuAssignment?: Tri;
+  /** Business Units by id, to name the unit of a role the user does not hold yet. */
+  readonly businessUnits?: readonly BusinessUnit[];
 }
 
 export function planAssignments(input: PlanInput): AssignmentPlan {
   const { access, catalog, requests } = input;
+  const crossBu = input.crossBuAssignment === true;
+  const buNames = new Map((input.businessUnits ?? []).map((b) => [normalizeId(b.id), b.name]));
   const userId = normalizeId(access.user.id);
   const direct = new Map<string, RoleGrant>(access.directRoles.map((g) => [normalizeId(g.role.id), g]));
   const viaTeam = new Set(access.teamRoles.map((g) => normalizeId(g.role.id)));
@@ -58,7 +72,8 @@ export function planAssignments(input: PlanInput): AssignmentPlan {
     if (!role) return 'an unknown business unit';
     const g = direct.get(normalizeId(role.id));
     if (g) return g.roleBusinessUnitName;
-    return normalizeId(role.businessUnitId) === userBu ? access.businessUnitName : 'another business unit';
+    if (normalizeId(role.businessUnitId) === userBu) return access.businessUnitName;
+    return buNames.get(normalizeId(role.businessUnitId)) ?? 'another business unit';
   };
 
   // One entry per role; the same request twice is one, opposite requests for the same role conflict and neither is sent.
@@ -73,7 +88,7 @@ export function planAssignments(input: PlanInput): AssignmentPlan {
   const items: PlanItem[] = [];
   for (const [roleId, actions] of byRole) {
     const role = known.get(roleId);
-    const base = { roleId, roleName: role?.name ?? '(unknown role)', businessUnitName: buName(role), alsoViaTeam: viaTeam.has(roleId) };
+    const base = { roleId, roleName: role?.name ?? '(unknown role)', businessUnitName: buName(role), businessUnitId: role ? normalizeId(role.businessUnitId) : null, alsoViaTeam: viaTeam.has(roleId) };
     const refuse = (action: AssignmentAction, reason: string): PlanItem => ({ ...base, action, status: 'refused', reason });
     if (actions.length > 1) {
       items.push(refuse('assign', 'Both adding and removing this role were requested; neither is sent. Choose one.'));
@@ -88,13 +103,16 @@ export function planAssignments(input: PlanInput): AssignmentPlan {
       if (!role) items.push(refuse(action, 'This role is not in the list of roles that can be assigned to this user.'));
       else if (access.user.isDisabled) items.push(refuse(action, 'The user is disabled; roles are not assigned to disabled users.'));
       else if (direct.has(roleId)) items.push({ ...base, action, status: 'alreadyAssigned', reason: 'The user already holds this role directly. Nothing is sent.' });
-      else if (normalizeId(role.businessUnitId) !== userBu) {
+      else if (normalizeId(role.businessUnitId) !== userBu && !crossBu) {
         const right = role.parentRootRoleId
           ? catalog.find((c) => normalizeId(c.businessUnitId) === userBu && (c.parentRootRoleId ?? c.id) === role.parentRootRoleId)
           : undefined;
-        items.push(refuse(action, `A role can only be assigned to users of the business unit it belongs to (${access.businessUnitName}).${right ? ` Use the copy of "${right.name}" in ${access.businessUnitName} instead.` : ''}`));
+        const why = input.crossBuAssignment === false
+          ? 'Assigning roles of other business units is turned off in this environment (record ownership across business units).'
+          : 'Whether roles of other business units may be assigned could not be read, so it is not offered.';
+        items.push(refuse(action, `${why} A role can then only be assigned to users of the business unit it belongs to (${access.businessUnitName}).${right ? ` Use the copy of "${right.name}" in ${access.businessUnitName} instead.` : ''}`));
       } else {
-        const write = plannedWrite.assignRole(userId, roleId, `Assign role "${role.name}" (${access.businessUnitName}) to ${access.user.fullName}`);
+        const write = plannedWrite.assignRole(userId, roleId, `Assign role "${role.name}" (${base.businessUnitName}) to ${access.user.fullName}`);
         items.push({ ...base, action, status: 'planned', reason: base.alsoViaTeam ? 'Assigned directly; the user also holds this role through a team.' : 'Will be assigned directly.', write });
       }
     } else if (!direct.has(roleId)) {

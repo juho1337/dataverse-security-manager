@@ -11,8 +11,10 @@ import { WriteBoundaryViolation, type WriteBoundary } from './boundary';
 // Request shapes follow the Web API reference (read 2026-11-02): AddPrivilegesRole and RemovePrivilegeRole are actions bound to `role`;
 // AddPrivilegesRole takes `Privileges`, a collection of RolePrivilege (PrivilegeId, Depth, BusinessUnitId), RemovePrivilegeRole takes
 // `Privilege`, a privilege reference. Actions send their parameters as the JSON body, so the OData entity-reference form is used.
-// UNVERIFIED against the real service until the approved write-test S1 runs, in particular: whether AddPrivilegesRole changes the depth
-// of a privilege the role already holds (the XrmToolBox implementation relies on add-or-change), and how Depth is accepted (name or code).
+// Real-host evidence (S1, 2026-11-03/04, issue #325; docs/testing-evidence.md): five edit cycles on a test role were verified by the tool and by an
+// independent Dataverse read: a privilege added at User depth, changed User -> Business Unit -> Parent: Child, and removed, with the other test
+// roles unchanged. So AddPrivilegesRole does change the depth of a privilege the role already holds. Editing several roles in one staged operation
+// applies this per role; that multi-role path has not yet been compared with an independent Dataverse read (see docs/testing-evidence.md).
 
 /** The writes this module implements; the other methods of the port are provided by the assignment and Business Unit move writers. */
 export type RolePrivilegeWriter = Pick<SecurityDataWriter, 'addPrivilege' | 'removePrivilege'>;

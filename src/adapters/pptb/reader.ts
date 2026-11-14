@@ -14,8 +14,8 @@ import { createReadOnlyHost, type ReadOnlyHost } from './readOnlyHost';
 
 // Read-only Dataverse reader over the PPTB host. It implements the SecurityDataReader port, reaches the host only
 // through the ReadOnlyHost facade, and refuses to read anything until the environment identity guard has passed.
-// UNVERIFIED against the real host (see paging.ts, identity.ts and the notes below): FetchXML paging behavior, the
-// shape of aliased link-entity columns, the objecttypecode filter, and the error shape.
+// Checked read-only against the real host in 2026-11 (issue #325; see the notes below, paging.ts and identity.ts): the aliased link-entity column
+// shape (`alias.column`) and the privilege filter (integer ObjectTypeCode). Still UNVERIFIED: paging above 5000 rows and most error shapes.
 
 /** privilege.accessright flags (AccessRights): same mapping the XrmToolBox reader uses. */
 export const ACCESS_RIGHT_TO_PRIVILEGE: ReadonlyMap<number, PrivilegeId> = new Map<number, PrivilegeId>([

@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { planAssignments, type AssignmentAction, type AssignmentPlan } from '../../../application/assignments/planner';
 import { confirmAndApplyAssignments, type AppliedAssignments } from '../../../application/assignments/service';
-import type { Role, UserAccess } from '../../../domain/buMove/types';
+import type { BusinessUnit, Role, Tri, UserAccess } from '../../../domain/buMove/types';
 import { normalizeId } from '../../../domain/operations';
 import type { AccessReader } from '../../../ports/accessReader';
 import type { SecurityDataWriter } from '../../../ports/securityDataWriter';
@@ -31,6 +31,12 @@ export interface RoleAssignmentConfig {
   readonly onReload: () => void;
 }
 
+/** What the planner needs besides the user's access: whether other Business Units may be used and their names. */
+export interface AssignContextInput {
+  readonly crossBuAssignment: Tri;
+  readonly businessUnits: readonly BusinessUnit[];
+}
+
 export interface RoleAssignments {
   readonly available: boolean;
   readonly phase: AssignPhase;
@@ -40,18 +46,29 @@ export interface RoleAssignments {
   readonly notice: string | null;
   toggle(userId: string, roleId: string, action: AssignmentAction): void;
   discard(): void;
-  openPreview(access: UserAccess, catalog: readonly Role[]): void;
+  openPreview(access: UserAccess, catalog: readonly Role[], context?: AssignContextInput): void;
   cancelPreview(): void;
   confirm(): Promise<void>;
   finish(): void;
   /** The selected user changed: staged requests of the previous user are dropped (a running or finished operation is kept). */
   reset(): void;
+  /** The chosen target Business Unit and the roles read for each unit live here, above the detail tabs, so they survive switching tabs together with the staged requests. */
+  readonly target: { readonly user: string; readonly bu: string } | null;
+  setTarget(userId: string, businessUnitId: string): void;
+  remember(userId: string, businessUnitId: string, roles: readonly Role[]): void;
+  rememberedRoles(userId: string): readonly Role[];
 }
 
 export function useRoleAssignments(config: RoleAssignmentConfig): RoleAssignments {
   const [phase, setPhaseState] = useState<AssignPhase>({ kind: 'idle' });
   const [staged, setStagedState] = useState<ReadonlyMap<string, AssignmentAction>>(new Map());
   const [notice, setNotice] = useState<string | null>(null);
+  const [target, setTargetState] = useState<{ readonly user: string; readonly bu: string } | null>(null);
+  const memory = useRef(new Map<string, readonly Role[]>());
+  const forget = useCallback(() => {
+    memory.current = new Map();
+    setTargetState(null);
+  }, []);
   const phaseRef = useRef<AssignPhase>(phase);
   const stagedRef = useRef<ReadonlyMap<string, AssignmentAction>>(staged);
   const stagedUser = useRef<string | null>(null);
@@ -72,7 +89,8 @@ export function useRoleAssignments(config: RoleAssignmentConfig): RoleAssignment
     setNotice(null);
     setStaged(new Map());
     stagedUser.current = null;
-  }, [setStaged]);
+    forget();
+  }, [setStaged, forget]);
 
   return {
     available: writer !== null,
@@ -96,13 +114,14 @@ export function useRoleAssignments(config: RoleAssignmentConfig): RoleAssignment
       if (phaseRef.current.kind === 'applying') return;
       setNotice(null);
       setStaged(new Map());
+      forget();
       if (phaseRef.current.kind === 'previewing') setPhase({ kind: 'idle' });
     },
 
-    openPreview(access, catalog) {
+    openPreview(access, catalog, context) {
       if (phaseRef.current.kind !== 'idle' || stagedRef.current.size === 0) return;
       if (stagedUser.current !== normalizeId(access.user.id)) return;
-      const plan = planAssignments({ access, catalog, requests: [...stagedRef.current].map(([roleId, action]) => ({ action, roleId })) });
+      const plan = planAssignments({ access, catalog, requests: [...stagedRef.current].map(([roleId, action]) => ({ action, roleId })), ...(context ? { crossBuAssignment: context.crossBuAssignment, businessUnits: context.businessUnits } : {}) });
       if (!plan.plan) {
         const why = plan.items.map((i) => `${i.roleName}: ${i.reason}`).join(' ');
         setNotice(`Nothing would be changed. ${why}`.trim());
@@ -142,10 +161,22 @@ export function useRoleAssignments(config: RoleAssignmentConfig): RoleAssignment
       setNotice(null);
       setStaged(new Map());
       stagedUser.current = null;
+      forget();
       setPhase({ kind: 'idle' });
       onReload();
     },
 
     reset,
+    target,
+    setTarget(userId, businessUnitId) {
+      setTargetState({ user: normalizeId(userId), bu: businessUnitId });
+    },
+    remember(userId, businessUnitId, roles) {
+      memory.current.set(`${normalizeId(userId)}|${normalizeId(businessUnitId)}`, roles);
+    },
+    rememberedRoles(userId) {
+      const prefix = `${normalizeId(userId)}|`;
+      return [...memory.current].filter(([k]) => k.startsWith(prefix)).flatMap(([, v]) => v);
+    },
   };
 }

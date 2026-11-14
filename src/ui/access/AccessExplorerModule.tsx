@@ -7,6 +7,7 @@ import type { SecurityDataWriter } from '../../ports/securityDataWriter';
 import type { UserAccess } from '../../domain/buMove/types';
 import type { ModuleContext } from '../modules';
 import { useReadResult } from '../useAsync';
+import { BulkAssign } from './assign/BulkAssign';
 import { AssignPreviewDialog, AssignResultPanel } from './assign/AssignDialogs';
 import { useRoleAssignments } from './assign/useRoleAssignments';
 import { SearchPanel, type Selection } from './SearchPanel';
@@ -27,6 +28,7 @@ export interface AssignmentWiring {
 function Explorer({ reader, demo, debounceMs, wiring }: { readonly reader: AccessReader; readonly demo: boolean; readonly debounceMs?: number; readonly wiring?: AssignmentWiring }) {
   const [controller, setController] = useState<AccessSearchController | null>(null);
   const [selected, setSelected] = useState<Selection | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   // Created in an effect (not during render) so that React StrictMode's mount/unmount/mount cycle never leaves a disposed controller.
   useEffect(() => {
@@ -72,6 +74,13 @@ function Explorer({ reader, demo, debounceMs, wiring }: { readonly reader: Acces
       <h2>Access Explorer</h2>
       {demo && <p className="access-hint">Demo data: fictional users, teams and roles. Nothing is read from an environment.</p>}
       <p className="access-hint">Shows which roles a user holds, directly and through teams, and where each comes from.{assignment.available ? ' Direct role changes are previewed and confirmed before anything is written.' : ' Read-only in this session.'}</p>
+      {assignment.available && wiring?.writer && wiring.environmentId && reader.loadAssignmentContext && reader.listRolesOfBusinessUnit && (
+        bulkOpen ? (
+          <BulkAssign reader={reader} writer={wiring.writer} actor="Tool user (confirmed in the PPTB UI)" environmentId={wiring.environmentId} environmentLabel={wiring.environmentLabel ?? 'the connected environment'} onClose={() => { setBulkOpen(false); user.retry(); }} />
+        ) : (
+          <p><button type="button" onClick={() => setBulkOpen(true)}>Assign roles to several users</button></p>
+        )
+      )}
       <div className="access-layout">
         {controller && <SearchPanel controller={controller} selected={selected} onSelect={setSelected} />}
         <div className="access-main" aria-live="polite">

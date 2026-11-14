@@ -39,9 +39,10 @@ Install: see the [README](../README.md#install). Open the tool from the PPTB sid
 
 1. Search users and teams (at least 2 characters); narrow by Business Unit if needed.
 2. **Security roles** lists direct and team-derived roles. **Remove** appears only on direct roles; a team-derived role must be changed on the team.
-3. **Add roles** opens a searchable picker (several at once); review the plan, then confirm.
+3. **Add roles** opens a searchable picker (several at once). The target Business Unit starts as the user's home unit; when the environment allows roles of other units (record ownership across business units is on and could be read), search and choose another unit, pick its roles, and repeat for further units. Each role is the exact copy that belongs to the chosen unit, so the same role can be held from several units. Review the plan, then confirm. A role removed here is that one copy only.
 4. **Table privileges** shows the highest granted depth per table and operation, and which role (direct or via team) provides it. Use **Copy report**, **Export .txt** or **Export CSV**.
 5. **Compare with another user** shows the differences between two people.
+6. **Assign roles to several users** (above the search): choose users, one target Business Unit and its roles. The preview lists each user, their home unit, the role and the role's unit, and which are not sent and why. Each user is applied and verified on its own; after the first user that is not verified the rest are not attempted.
 
 ![Access Explorer: add roles](images/04-access-explorer-roles.png)
 

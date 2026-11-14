@@ -1,4 +1,4 @@
-THIRD-PARTY NOTICES for Dataverse Security Manager 0.1.0
+THIRD-PARTY NOTICES for Dataverse Security Manager 0.2.0
 
 The tool bundles the runtime packages below into app.js. Development tools (compiler, test runner, linter, type definitions) are not part of the package.
 This list is generated from package-lock.json and node_modules; it is an inventory, not legal advice.
